@@ -79,9 +79,14 @@ O "How to" foi testado no ZABBIX 3.0 ao 5.0 no Debian 8 ao 10, Ubuntu 14 ao 20 e
 			<a href=#conclusão>Conclusão</a>
 		</strong>
 	</li>
-		<li>
+	<li>
 		<strong>
 			<a href=#contribuições>Contribuições</a>
+		</strong>
+	</li>
+	<li>
+		<strong>
+			<a href=#agradecimentos>Agradecimentos</a>
 		</strong>
 	</li>
 </ul>
@@ -255,10 +260,16 @@ A “<i>Mensagem Padrão</i>” na aba <b>“<u>Ação</u>”</b> existe somente
 
 <img src="https://lh3.googleusercontent.com/pw/ACtC-3fxK4Ho3_t5sT98nHLkfy2rZM7pMEG9CrZrcJe967UXCmEKpswUsSJn66NhF94fc39lnukUPUfaP4joCtkZjaM0MTe_Y22DCqwIzx-kN34auXoGmDnlgalz4XG7gJW1HWl-GP4PFt6cK41TTPcLgIswxg=w744-h341-no?authuser=0"/><br><br>
 
-<blockquote> Modelo Mensagem Padrão</blockquote>
-<pre>{ITEM.NAME}#{EVENT.ID}#{ITEM.ID}#00C800#3600#
+<blockquote> Modelo Mensagem (Incidente)</blockquote>
+<pre>{ITEM.NAME}#{EVENT.ID}#{ITEM.ID}#FF0000#10800#
 <b>IP/DNS:</b> {HOST.CONN}
 <b>Último valor:</b> {ITEM.LASTVALUE}</pre>
+<br>
+<blockquote> Modelo Mensagem (Recuperação)</blockquote>
+<pre>{ITEM.NAME}#{EVENT.ID}#{ITEM.ID}#00C800#3600#
+<b>IP/DNS:</b> {HOST.CONN}
+<b>Último valor:</b> {ITEM.LASTVALUE}
+<b>Duração:</b> {EVENT.DURATION}</pre>
 
 <b>OBS:</b><br>logo se for usar
 <i><b>”00C800”</b></i> é a cor da linha (verde) em Hex. sem tralha, e <i><b>”3600”</b></i> é o período do gráfico (1h) em segundo.
@@ -319,6 +330,15 @@ armazena log e faz a comunicação diretas entre APIs. <br><br>
 
 
 # Contribuições
+
+Neste link você consegue criar de modelos para mensagens HTML, que foi indicado pelo amigo "Mario" 
+(<a href="https://t.me/ZXRTI" class="wikilink2" title="Conversar com ele" rel="nofollow">@ZXRTI</a>)
+<br>
+<a href="https://html-online.com/editor/" class="wikilink2" title="Criador de HTML" rel="nofollow">Site para criação de modelos HTML</a>
+
+
+# Agradecimentos
+
 Gostaria de agradecer as mais de 400 pessoas que estão no "grupo dos projetos", que serve como ajuda/sugestão/contribuição
 e aos que participam mais ativamente ajudando, sugerindo, pontuando, indicando melhorias e testando.
 

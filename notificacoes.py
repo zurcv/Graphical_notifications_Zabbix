@@ -226,7 +226,10 @@ def send_mail(dest, itemType, get_graph):
     mail_pass = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail_pass')
     ####################################################################################################################
 
-    email_from = email.utils.formataddr(tuple(email_from.replace(">", "").split(" <")))
+    try:
+        email_from = email.utils.formataddr(tuple(email_from.replace(">", "").split(" <")))
+    except:
+        email_from = email_from
 
     dests = ', '.join(dest)
     msg = body
