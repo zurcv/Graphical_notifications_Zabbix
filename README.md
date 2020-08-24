@@ -208,7 +208,13 @@ dessa forma fica garantido a entrega.
 Consultando Configuração
 </h3>
 
-Para consultar a configuração de um usuário, grupo ou canal, execute o comando abaixo:
+Caso esteja usando uma conta invés de bot, terá a vantagem de usar este módulo de consulta, se estiver usando bot <b><u>DESCONSIDERE ESTE PASSO!</u></b> <br>
+
+Poderá executar este comando para ter a quantidade e nome de todos os seus chats:
+<pre>sudo -u zabbix ./notificacoes-teste.py "info"</pre> <br>
+
+
+Para consultar a configuração de um usuário, grupo ou canal específico, execute o comando abaixo:
 
 <b>Script info ID, Nome ou user.</b><br>
 Exs:<br>
@@ -216,16 +222,14 @@ Exs:<br>
 ou
 <pre>sudo -u zabbix ./notificacoes-teste.py "info" "Nome Sobrenome"</pre>
 ou
-<pre>sudo -u zabbix ./notificacoes-teste.py "info" "usuário"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py "info" "usuário"</pre><br>
 
-pegue o “ID”, o “nome de cadastro” ou o "nome de registro" que aparecerá.
-
+Pegue o “ID”, o “nome de cadastro” ou o "nome de registro" que aparecerá.
 
 Para enviar a mensagem, é preciso usar o ID, o nome do contato ou o nome de usuário, conforme as estruturas apresentada pelo comando supracitado:<br>
 
 <b>OBS:</b><br>
-<b>1 – </b> Caso não esteja usando bot, poderá ainda executar o comando
-<pre>sudo -u zabbix ./notificacoes-teste.py "info"</pre> para ter a quantidade e nome de todos os seus chats 
+<b>1 – </b> Lembrando novamente que isso NÃO FUNCIONA COM BOT. 
 
 # Configurando o envio:
 
