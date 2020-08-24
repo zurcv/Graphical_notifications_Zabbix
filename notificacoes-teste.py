@@ -186,8 +186,7 @@ log = Log
 nograph = "nograph"
 
 def destinatarios(dest):
-    destinatario = ["{0}".format(hostsW) for hostsW in dest.split(",")]
-
+    destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
     return destinatario
 
 def send_mail(dest, itemType, get_graph):
@@ -295,33 +294,20 @@ def send_telegram(dest, itemType, get_graph):
         dest = dest[1:]
 
     with app:
-        Contatos = app.get_contacts()
+        try:
+            Contatos = app.get_contacts()
+        except:
+            pass
         Dialogos = app.iter_dialogs()
         flag = True
         while flag:
-            for contato in Contatos:
-                Id = "{}".format(contato.id)
-                nome = "{}".format(f"{contato.first_name} {contato.last_name}")
-                username = contato.username
-                if username:
-                    if username.lower() in dest or dest in Id or dest in nome.lower():
-                        dest = nome
-                        flag = False
-                        break
-                else:
-                    if dest in Id or dest in nome.lower():
-                        dest = nome
-                        flag = False
-                        break
-
-            if flag:
-                for dialogo in Dialogos:
-                    Id = "{}".format(dialogo.chat.id)
-                    nome = "{}".format(dialogo.chat.title or f"{dialogo.chat.first_name} {dialogo.chat.last_name}")
-                    username = dialogo.chat.username
-
+            try:
+                for contato in Contatos:
+                    Id = "{}".format(contato.id)
+                    nome = "{}".format(f"{contato.first_name} {contato.last_name}")
+                    username = contato.username
                     if username:
-                        if username in dest or dest in Id or dest in nome.lower():
+                        if username.lower() in dest or dest in Id or dest in nome.lower():
                             dest = nome
                             flag = False
                             break
@@ -330,6 +316,29 @@ def send_telegram(dest, itemType, get_graph):
                             dest = nome
                             flag = False
                             break
+            except:
+                pass
+
+            try:
+                if flag:
+                    for dialogo in Dialogos:
+                        Id = "{}".format(dialogo.chat.id)
+                        nome = "{}".format(dialogo.chat.title or f"{dialogo.chat.first_name} {dialogo.chat.last_name}")
+                        username = dialogo.chat.username
+
+                        if username:
+                            if username in dest or dest in Id or dest in nome.lower():
+                                dest = nome
+                                flag = False
+                                break
+                        else:
+                            if dest in Id or dest in nome.lower():
+                                dest = nome
+                                flag = False
+                                break
+            except:
+                Id = dest
+                flag = False
 
         sendMsg = """{}{} {}""".format(saudacao.format(dest), subject, body)
         if re.search("(0|3)", itemType):
