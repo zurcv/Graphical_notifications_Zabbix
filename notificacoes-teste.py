@@ -298,7 +298,12 @@ def send_telegram(dest, itemType, get_graph):
             Contatos = app.get_contacts()
         except:
             pass
-        Dialogos = app.iter_dialogs()
+
+        try:
+            Dialogos = app.iter_dialogs()
+        except:
+            pass
+
         flag = True
         while flag:
             try:
@@ -512,7 +517,15 @@ def get_info(name=None):
     ContA = 0
     with app:
         infos = ""
-        dialogos = app.iter_dialogs()
+        try:
+            dialogos = app.iter_dialogs()
+        except Exception as msg:
+            if "BOT" in msg.args[0]:
+                print("Esta função não está disponível para consultas com BOT")
+            else:
+                print(msg.args[0])
+            exit()
+
         infos += ""
         if name:
             for dialogo in dialogos:
