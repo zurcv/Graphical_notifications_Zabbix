@@ -381,8 +381,11 @@ def send_telegram(dest, itemType, get_graph):
                                 flag = False
                                 break
             except:
-                Id = dest
                 flag = False
+                if re.match("[0-9-]+", dest):
+                    Id = int(dest)
+                else:
+                    Id = dest
 
         # saudacao = salutation + " <b><u>{0}</u></b> \n\n"
         sendMsg = """{}{} {}""".format(saudacao.format(dest), sys.argv[2], msg)

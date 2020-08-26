@@ -342,8 +342,11 @@ def send_telegram(dest, itemType, get_graph):
                                 flag = False
                                 break
             except:
-                Id = dest
                 flag = False
+                if re.match("[0-9-]+", dest):
+                    Id = int(dest)
+                else:
+                    Id = dest
 
         sendMsg = """{}{} {}""".format(saudacao.format(dest), subject, body)
         if re.search("(0|3)", itemType):
@@ -521,7 +524,7 @@ def get_info(name=None):
             dialogos = app.iter_dialogs()
         except Exception as msg:
             if "BOT" in msg.args[0]:
-                print("Esta função não está disponível para consultas com BOT")
+                print("Esta função não está disponível para consultas com BOT\n")
             else:
                 print(msg.args[0])
             exit()
