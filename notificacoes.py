@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# Envio de gráfico por Email através do ZABBIX (Send zabbix alerts graph mail)
+# Envio de gráfico por WhatsApp, Telegram e Email através do ZABBIX (Send zabbix alerts graph WhatsApp, Telegram e Mail)
 #
 #
 # Copyright (C) <2016>
@@ -20,12 +20,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Contacts:
-# Eracydes Carvalho (Sansão Simonton) - NOC Analyst - sansaoipb@gmail.com
+# Eracydes Carvalho (Sansão Simonton) - Monitoring Specialist - Telegram: @sansaoipb
 # Thiago Paz - NOC Analyst - thiagopaz1986@gmail.com
 
-import os, sys, re, json, time, smtplib, urllib3
-import requests
-from pyrogram import Client
+import os, sys, re, json, time, smtplib
+
+tag = True
+while tag:
+    try:
+        import requests, urllib3
+        from pyrogram import Client
+        tag = False
+
+    except ModuleNotFoundError:
+        os.popen("/usr/bin/python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
+        time.sleep(3)
+    except Exception as e:
+        print(f"{e}")
+        exit()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -35,6 +47,9 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import configparser
 conf = configparser
+
+import base64
+from urllib.parse import quote
 
 class PropertiesReaderX:
     config = None
@@ -46,20 +61,12 @@ class PropertiesReaderX:
         # type: (object, object) -> object
         return PropertiesReaderX.config.get(section, key)
 
-    def setValue(self, section, key):
-        PropertiesReaderX.config.set(section, key)
+path = "{0}".format("/".join(sys.argv[0].split("/")[:-1])+"/{0}")
 
 if sys.platform.startswith('win32') or sys.platform.startswith('cygwin') or sys.platform.startswith('darwin'):  # para debug quando estiver no WINDOWS ou no MAC
-    path = os.path.join(os.getcwd(), "{0}")
     graph_path = os.getcwd()
 
 else:
-    path = "/usr/local/share/zabbix/alertscripts/"
-
-    if not os.path.exists(path):
-        path = "/usr/lib/zabbix/alertscripts/{0}"
-    else:
-        path = "/usr/local/share/zabbix/alertscripts/{0}"
     graph_path = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'path.graph')  # Path where graph file will be save temporarily
 
 # Zabbix settings | Dados do Zabbix ####################################################################################
@@ -73,11 +80,6 @@ width = PropertiesReaderX(path.format('configScripts.properties')).getValue('Pat
 
 # Ack message | Ack da Mensagem ########################################################################################
 Ack = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'ack')
-
-# Telegram settings | Configuracao do Telegram #########################################################################
-api_id = int(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id'))
-api_hash = str(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash'))
-app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
 
 # Salutation | Saudação ################################################################################################
 Salutation = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'salutation')
@@ -95,14 +97,13 @@ else:
 
 # Diretórios
 # Log path | Diretório do log
+projeto = sys.argv[0].split("/")[-1:][0].split(".")[0]
+logName = '{0}.log'.format(projeto)
+pathLogs = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'path.logs')
 
-try:
-    projeto = sys.argv[4]
-except:
-    projeto = "notificacoes"
+if "default" == pathLogs.lower():
+    pathLogs = path.format("log")
 
-logName = '{0}Graph.log'.format(projeto)
-pathLogs = path.format("log")
 arqLog = "{0}".format(os.path.join(pathLogs, logName))
 
 if not os.path.exists(pathLogs):
@@ -156,12 +157,14 @@ class Log:
             Log.log(entry, pathfile, log_level)
         except Exception:
             try:
-                if "\\" in traceback.format_exc():
-                    linha = re.search("(File)[A-Za-z0-9_\"\\\\\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
-                    pathDefault = "{0}\\log\\".format("\\".join(linha.split("\\")[:-1]))
-                else:
-                    linha = re.search("(File)[A-Za-z0-9_\"/\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
-                    pathDefault = "{0}/log/".format("/".join(linha.split("/")[:-1]))
+                # if "\\" in traceback.format_exc():
+                #     linha = re.search("(File)[A-Za-z0-9_\"\\\\\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
+                #     pathDefault = "{0}\\log\\".format("\\".join(linha.split("\\")[:-1]))
+                # else:
+                #     linha = re.search("(File)[A-Za-z0-9_\"/\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
+                #     pathDefault = "{0}/log/".format("/".join(linha.split("/")[:-1]))
+
+                pathDefault = f"{pathLogs}/"
                 arquivo = open("{0}{1}".format(pathDefault, arqConfig), "w")
                 arquivo.writelines(file)
                 arquivo.close()
@@ -217,18 +220,34 @@ def destinatarios(dest):
     destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
     return destinatario
 
-def send_mail(dest, itemType, get_graph):
+def send_mail(dest, itemType, get_graph, key):
     # Mail settings | Configrações de e-mail ###########################################################################
-    email_from = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'email_from')
-    smtp_server = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'smtp_server')
-    mail_user = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail_user')
-    mail_pass = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail_pass')
+    mail_from = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.from')
+    smtp_server0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'smtp.server')
+    mail_user0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.user')
+    mail_pass0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.pass')
     ####################################################################################################################
 
     try:
-        email_from = email.utils.formataddr(tuple(email_from.replace(">", "").split(" <")))
+        smtp_server = decrypt(key, smtp_server0)
     except:
-        email_from = email_from
+        smtp_server = smtp_server0
+
+    try:
+        mail_user = decrypt(key, mail_user0)
+    except:
+        mail_user = mail_user0
+
+    try:
+        mail_pass = decrypt(key, mail_pass0)
+    except:
+        mail_pass = mail_pass0
+
+
+    try:
+        mail_from = email.utils.formataddr(tuple(mail_from.replace(">", "").split(" <")))
+    except:
+        mail_from = mail_from
 
     dests = ', '.join(dest)
     msg = body
@@ -240,7 +259,7 @@ def send_mail(dest, itemType, get_graph):
 
     msgRoot = MIMEMultipart('related')
     msgRoot['Subject'] = subject
-    msgRoot['From'] = email_from
+    msgRoot['From'] = mail_from
     msgRoot['To'] = dests
 
     msgAlternative = MIMEMultipart('alternative')
@@ -287,7 +306,7 @@ def send_mail(dest, itemType, get_graph):
             pass
 
         try:
-            smtp.sendmail(email_from, dest, msgRoot.as_string())
+            smtp.sendmail(mail_from, dest, msgRoot.as_string())
         except Exception as msg:
             # print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
             log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog,
@@ -309,7 +328,24 @@ def send_mail(dest, itemType, get_graph):
         smtp.quit()
         exit()
 
-def send_telegram(dest, itemType, get_graph):
+def send_telegram(dest, itemType, get_graph, key):
+    # Telegram settings | Configuracao do Telegram #########################################################################
+    api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
+    api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
+
+    try:
+        api_id = int(decrypt(key, api_id0))
+    except:
+        api_id = api_id0
+
+    try:
+        api_hash = str(decrypt(key, api_hash0))
+    except:
+        api_hash = api_hash0
+
+
+    app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
+
     dest = dest.lower()
     msg = body.replace("\\n", "")
     saudacao = salutation
@@ -318,7 +354,6 @@ def send_telegram(dest, itemType, get_graph):
     if re.search("(sim|s|yes|y)", str(Saudacao).lower()):
         if saudacao:
             saudacao = salutation + " {0} \n\n"
-
     else:
         saudacao = ""
 
@@ -333,22 +368,19 @@ def send_telegram(dest, itemType, get_graph):
         dest = dest[1:]
 
     with app:
-        try:
-            Contatos = app.get_contacts()
-        except:
-            pass
-
-        try:
-            Dialogos = app.iter_dialogs()
-        except:
-            pass
-
         flag = True
         while flag:
             try:
+                Contatos = app.get_contacts()
                 for contato in Contatos:
-                    Id = "{}".format(contato.id)
-                    nome = "{}".format(f"{contato.first_name} {contato.last_name}")
+                    try:
+                        Id = f"{contato.id}"
+                        nome = f"{contato.first_name} {contato.last_name}"
+                    except:
+                        # print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
+                        log.writelog("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]), arqLog, "WARNING")
+                        exit()
+
                     username = contato.username
                     if username:
                         if username.lower() in dest or dest in Id or dest in nome.lower():
@@ -365,8 +397,9 @@ def send_telegram(dest, itemType, get_graph):
 
             try:
                 if flag:
+                    Dialogos = app.iter_dialogs()
                     for dialogo in Dialogos:
-                        Id = "{}".format(dialogo.chat.id)
+                        Id = f"{dialogo.chat.id}"
                         nome = "{}".format(dialogo.chat.title or f"{dialogo.chat.first_name} {dialogo.chat.last_name}")
                         username = dialogo.chat.username
 
@@ -382,10 +415,14 @@ def send_telegram(dest, itemType, get_graph):
                                 break
             except:
                 flag = False
-                if re.match("[0-9-]+", dest):
-                    Id = int(dest)
-                else:
-                    Id = dest
+                try:
+                    chat = app.get_chat(dest)
+                    Id = "{}".format(chat.id)
+                    dest = "{}".format(chat.title or f"{chat.first_name} {chat.last_name}")
+                except Exception as msg:
+                    # print(msg.args[0])
+                    log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
+                    exit()
 
         # saudacao = salutation + " <b><u>{0}</u></b> \n\n"
         sendMsg = """{}{} {}""".format(saudacao.format(dest), sys.argv[2], msg)
@@ -430,6 +467,93 @@ def send_telegram(dest, itemType, get_graph):
         if nograph not in sys.argv:
             ack(dest, "Telegram enviado com sucesso ({0})")
 
+def send_whatsapp(destiny, itemType, get_graph, key):
+    line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
+    acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acessKey')
+    port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
+
+    try:
+       line = decrypt(key, line0)
+    except:
+       line = line0
+
+    try:
+        acessKey = decrypt(key, acessKey0)
+    except:
+        acessKey = acessKey0
+
+    try:
+        port = decrypt(key, port0)
+    except:
+        port = port0
+
+
+    saudacao = salutation
+    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'salutation.whatsapp')
+
+    if re.search("(sim|s|yes|y)", str(Saudacao).lower()):
+        if saudacao:
+            saudacao = salutation + ".\\n\\n"
+    else:
+        saudacao = ""
+
+    msg0 = body.replace("\r", "").split('\n ')[0].replace("\n", "\\n")
+    msg = "{}\\n{}".format(sys.argv[2].replace(r"✅", r"\u2705"), msg0)
+    message0 = "{}{}".format(saudacao, msg)
+
+    valida = 0
+    message1 = ""
+    formatter = [("b", "*"), ("i", "_"), ("u", "")]
+    for f in formatter:
+        old, new = f
+        if re.search(r"(<(/)?{}>)".format(old), message0):
+            message1 = re.sub(r"(<(/)?{}>)".format(old), r"{}".format(new), message0)
+            valida += 1
+
+    if valida == 0:
+        message1 = message0
+
+    message = quote(base64.b64encode(message1.encode("utf-8")))
+    if re.search("(0|3)", itemType):
+        Graph = quote(base64.b64encode(get_graph.content))
+        try:
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(key=acessKey, text=message, stream=Graph)
+            url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(port=port, line=line, destiny=destiny)
+            result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
+
+            if result.status_code != 200:
+                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+            else:
+                # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
+                log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+        except Exception as e:
+            # print(e)
+            log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
+            exit()
+    else:
+        try:
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(acessKey)
+            url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=message)
+            result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
+
+            if result.status_code != 200:
+                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+            else:
+                # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
+                log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+        except Exception as e:
+            # print(e)
+            log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
+            exit()
+
+    if re.search("(sim|s|yes|y)", str(Ack).lower()):
+        if nograph not in sys.argv:
+            ack(destiny, "WhatsApp enviado com sucesso ({0})")
+
 def token():
     try:
         login_api = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
@@ -453,10 +577,12 @@ def token():
             return auth
 
         elif 'error' in login_api:
-            print('Zabbix: %s' % login_api["error"]["data"])
+            # print('Zabbix: %s' % login_api["error"]["data"])
+            log.writelog('Zabbix: {0}'.format(login_api["error"]["data"]), arqLog, "ERROR")
             exit()
         else:
-            print(login_api)
+            # print(login_api)
+            log.writelog('{0}'.format(login_api), arqLog, "ERROR")
             exit()
 
     except ValueError as e:
@@ -464,7 +590,7 @@ def token():
         log.writelog('Check declared zabbix URL/IP and try again | Valide a URL/IP do Zabbix declarada e tente novamente. (Current: {0})'.format(zbx_server), arqLog, "WARNING")
         exit()
     except Exception as e:
-        print(e)
+        # print(e)
         log.writelog('{0}'.format(str(e)), arqLog, "WARNING")
         exit()
 
@@ -551,6 +677,33 @@ def getgraph(itemname, period):
         logout_api()
         exit()
 
+def getItemType(itemid):
+    itemtype_api = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
+                                 verify=False, data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "method": "item.get",
+                "params": {
+                    "output": ["value_type"], "itemids": itemid, "webitems": itemid
+                },
+                "auth": auth,
+                "id": 2
+            }
+        )
+     )
+
+    itemtype_api = json.loads(itemtype_api.text.encode('utf-8'))
+
+    if itemtype_api["result"]:
+        item_type = itemtype_api["result"][0]['value_type']
+        return item_type
+    else:
+        log.writelog(
+            'Invalid ItemID or user has no read permission on item/host | ItemID inválido ou usuário sem permissão de leitura no item/host',
+            arqLog, "WARNING")
+        logout_api()
+        exit()
+
 def ack(dest, message):
     Json = {
             "jsonrpc": "2.0",
@@ -568,32 +721,24 @@ def ack(dest, message):
     requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'}, verify=False,
             data=json.dumps(Json))
 
-def getItemType(itemid):
-    itemtype_api = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
-         verify=False, data=json.dumps(
-             {
-                 "jsonrpc": "2.0",
-                 "method": "item.get",
-                 "params": {
-                     "output": ["value_type"], "itemids": itemid, "webitems": itemid
-                 },
-                 "auth": auth,
-                 "id": 2
-             }
-         )
-    )
+def get_cripto():
+    fileX = os.path.join(pathLogs, ".env.json")
+    JsonX = json.loads(os.popen(f"cat {fileX}").read())
+    return JsonX
 
-    itemtype_api = json.loads(itemtype_api.text.encode('utf-8'))
-
-    if itemtype_api["result"]:
-        item_type = itemtype_api["result"][0]['value_type']
-        return item_type
-    else:
-        log.writelog(
-            'Invalid ItemID or user has no read permission on item/host | ItemID inválido ou usuário sem permissão de leitura no item/host',
-            arqLog, "WARNING")
-        logout_api()
-        exit()
+def decrypt(key, source, decode=True):
+    from Crypto.Cipher import AES
+    from Crypto.Hash import SHA256
+    if decode:
+        source = base64.b64decode(source.encode("ISO-8859-1"))
+    key = SHA256.new(key.encode("ISO-8859-1")).digest()  # use SHA-256 over our key to get a proper-sized AES key
+    IV = source[:AES.block_size]  # extract the IV from the beginning
+    decryptor = AES.new(key, AES.MODE_CBC, IV)
+    data = decryptor.decrypt(source[AES.block_size:])  # decrypt
+    padding = data[-1]  # pick the padding value from the end; Python 2.x: ord(data[-1])
+    if data[-padding:] != bytes([padding]) * padding:  # Python 2.x: chr(padding) * padding
+        raise ValueError("Invalid padding...")
+    return data[:-padding].decode("ISO-8859-1")  # remove the padding
 
 def main():
     if nograph not in sys.argv:
@@ -605,19 +750,26 @@ def main():
 
     dest = sys.argv[1]
     destino = destinatarios(dest)
+
+    codeKey = JSON['code']
+
     emails = []
     for x in destino:
         if re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
             emails.append(x)
 
+        elif re.match("^[0-9]+$", x):
+            send_whatsapp(x, item_type, get_graph, codeKey)
+
         else:
             telegram = x.replace("_", " ")
-            send_telegram(telegram, item_type, get_graph)
+            send_telegram(telegram, item_type, get_graph, codeKey)
 
     if [] != emails:
-        send_mail(emails, item_type, get_graph)
+        send_mail(emails, item_type, get_graph, codeKey)
 
 if __name__ == '__main__':
+    JSON = get_cripto()
     auth = token()
     main()
     logout_api()

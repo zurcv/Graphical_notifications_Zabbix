@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# Envio de gráfico por Email através do ZABBIX (Send zabbix alerts graph mail)
+# Envio de gráfico por WhatsApp, Telegram e Email através do ZABBIX (Send zabbix alerts graph WhatsApp, Telegram e Mail)
 #
 #
 # Copyright (C) <2016>
@@ -23,9 +23,25 @@
 # Eracydes Carvalho (Sansão Simonton) - Monitoring Specialist - Telegram: @sansaoipb
 # Thiago Paz - NOC Analyst - thiagopaz1986@gmail.com
 
-import os, sys, re, json, time, smtplib, urllib3
-import requests
-from pyrogram import Client
+pythonVersion = 3.6
+import os, sys, re, json, time, smtplib
+
+tag = True
+while tag:
+    try:
+        if float(sys.version.split(" ", 1)[0][:-2]) < pythonVersion:
+            print("\nSua versão do Python é {}.\nInstale/Atualize para o {} ou superior e refaça os passos do git".format(sys.version.split(" ", 1)[0], pythonVersion))
+            exit()
+        import requests, urllib3
+        from pyrogram import Client
+        tag = False
+
+    except ModuleNotFoundError:
+        os.popen("/usr/bin/python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
+        time.sleep(3)
+    except Exception as e:
+        print(f"{e}")
+        exit()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -35,6 +51,13 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import configparser
 conf = configparser
+
+import base64
+from urllib.parse import quote
+
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+from Crypto import Random
 
 class PropertiesReaderX:
     config = None
@@ -46,20 +69,12 @@ class PropertiesReaderX:
         # type: (object, object) -> object
         return PropertiesReaderX.config.get(section, key)
 
-    def setValue(self, section, key):
-        PropertiesReaderX.config.set(section, key)
+path = "{0}".format("/".join(sys.argv[0].split("/")[:-1])+"/{0}")
 
 if sys.platform.startswith('win32') or sys.platform.startswith('cygwin') or sys.platform.startswith('darwin'):  # para debug quando estiver no WINDOWS ou no MAC
-    path = os.path.join(os.getcwd(), "{0}")
     graph_path = os.getcwd()
 
 else:
-    path = "/usr/local/share/zabbix/alertscripts/"
-
-    if not os.path.exists(path):
-        path = "/usr/lib/zabbix/alertscripts/{0}"
-    else:
-        path = "/usr/local/share/zabbix/alertscripts/{0}"
     graph_path = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'path.graph')  # Path where graph file will be save temporarily
 
 # Zabbix settings | Dados do Zabbix ####################################################################################
@@ -70,11 +85,6 @@ zbx_pass = PropertiesReaderX(path.format('configScripts.properties')).getValue('
 # Graph settings | Configuracao do Grafico #############################################################################
 height = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'height')    # Graph height | Altura
 width = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'width')     # Graph width  | Largura
-
-# Telegram settings | Configuracao do Telegram #########################################################################
-api_id = int(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id'))
-api_hash = str(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash'))
-app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
 
 # Salutation | Saudação ################################################################################################
 Salutation = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'salutation')
@@ -90,11 +100,50 @@ if re.search("(sim|s|yes|y)", str(Salutation).lower()):
 else:
     salutation = ""
 
+def keepass(value=None):
+    import random
+    char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#-_=+,.;:?"
+    passwd = ""
+    if value:
+        char1 = value
+    else:
+        char1 = len(char)
+
+    while len(passwd) != char1:
+         passwd += random.choice(char)
+    return passwd
+
+def encrypt(key, source, encode=True):
+    source = source.encode("ISO-8859-1")
+    key = SHA256.new(key.encode("ISO-8859-1")).digest()  # use SHA-256 over our key to get a proper-sized AES key
+    IV = Random.new().read(AES.block_size)  # generate IV
+    encryptor = AES.new(key, AES.MODE_CBC, IV)
+    padding = AES.block_size - len(source) % AES.block_size  # calculate needed padding
+    source += bytes([padding]) * padding  # Python 2.x: source += chr(padding) * padding
+    data = IV + encryptor.encrypt(source)  # store the IV at the beginning and encrypt
+    return base64.b64encode(data).decode("ISO-8859-1") if encode else data
+
+def decrypt(key, source, decode=True):
+    if decode:
+        source = base64.b64decode(source.encode("ISO-8859-1"))
+    key = SHA256.new(key.encode("ISO-8859-1")).digest()  # use SHA-256 over our key to get a proper-sized AES key
+    IV = source[:AES.block_size]  # extract the IV from the beginning
+    decryptor = AES.new(key, AES.MODE_CBC, IV)
+    data = decryptor.decrypt(source[AES.block_size:])  # decrypt
+    padding = data[-1]  # pick the padding value from the end; Python 2.x: ord(data[-1])
+    if data[-padding:] != bytes([padding]) * padding:  # Python 2.x: chr(padding) * padding
+        raise ValueError("Invalid padding...")
+    return data[:-padding].decode("ISO-8859-1")  # remove the padding
+
 # Diretórios
 # Log path | Diretório do log
-projeto = "notificacoes"
-logName = '{0}Graph-teste.log'.format(projeto)
-pathLogs = path.format("log")
+projeto = sys.argv[0].split("/")[-1:][0].split(".")[0]
+logName = '{0}.log'.format(projeto)
+pathLogs = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'path.logs')
+
+if "default" == pathLogs.lower():
+    pathLogs = path.format("log")
+
 arqLog = "{0}".format(os.path.join(pathLogs, logName))
 
 if not os.path.exists(pathLogs):
@@ -104,6 +153,23 @@ if not os.path.exists(pathLogs):
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
+fileC = """{
+    "code": false,
+    "email": {
+            "smtp.server": false,
+            "mail.user": false,
+            "mail.pass": false
+    },
+    "telegram": {
+            "api.id": false,
+            "api.hash": false
+    },
+    "whatsapp": {
+        "line": false,
+        "acessKey": false,
+        "port": false
+    }
+}"""
 
 import logging.config
 import traceback
@@ -148,12 +214,14 @@ class Log:
             Log.log(entry, pathfile, log_level)
         except Exception:
             try:
-                if "\\" in traceback.format_exc():
-                    linha = re.search("(File)[A-Za-z0-9_\"\\\\\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
-                    pathDefault = "{0}\\log\\".format("\\".join(linha.split("\\")[:-1]))
-                else:
-                    linha = re.search("(File)[A-Za-z0-9_\"/\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
-                    pathDefault = "{0}/log/".format("/".join(linha.split("/")[:-1]))
+                # if "\\" in traceback.format_exc():
+                #     linha = re.search("(File)[A-Za-z0-9_\"\\\\\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
+                #     pathDefault = "{0}\\log\\".format("\\".join(linha.split("\\")[:-1]))
+                # else:
+                #     linha = re.search("(File)[A-Za-z0-9_\"/\s:.]+", traceback.format_exc()).group()[5:].replace("\"", "")
+                #     pathDefault = "{0}/log/".format("/".join(linha.split("/")[:-1]))
+
+                pathDefault = f"{pathLogs}/"
                 arquivo = open("{0}{1}".format(pathDefault, arqConfig), "w")
                 arquivo.writelines(file)
                 arquivo.close()
@@ -189,18 +257,34 @@ def destinatarios(dest):
     destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
     return destinatario
 
-def send_mail(dest, itemType, get_graph):
+def send_mail(dest, itemType, get_graph, key):
     # Mail settings | Configrações de e-mail ###########################################################################
-    email_from = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'email_from')
-    smtp_server = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'smtp_server')
-    mail_user = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail_user')
-    mail_pass = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail_pass')
+    mail_from = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.from')
+    smtp_server0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'smtp.server')
+    mail_user0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.user')
+    mail_pass0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.pass')
     ####################################################################################################################
 
     try:
-        email_from = email.utils.formataddr(tuple(email_from.replace(">", "").split(" <")))
+        smtp_server = decrypt(key, smtp_server0)
     except:
-        email_from = email_from
+        smtp_server = smtp_server0
+
+    try:
+        mail_user = decrypt(key, mail_user0)
+    except:
+        mail_user = mail_user0
+
+    try:
+        mail_pass = decrypt(key, mail_pass0)
+    except:
+        mail_pass = mail_pass0
+
+
+    try:
+        mail_from = email.utils.formataddr(tuple(mail_from.replace(">", "").split(" <")))
+    except:
+        mail_from = mail_from
 
     dests = ', '.join(dest)
     msg = body
@@ -212,7 +296,7 @@ def send_mail(dest, itemType, get_graph):
 
     msgRoot = MIMEMultipart('related')
     msgRoot['Subject'] = Subject
-    msgRoot['From'] = email_from
+    msgRoot['From'] = mail_from
     msgRoot['To'] = dests
 
     msgAlternative = MIMEMultipart('alternative')
@@ -256,7 +340,7 @@ def send_mail(dest, itemType, get_graph):
             pass
 
         try:
-            smtp.sendmail(email_from, dest, msgRoot.as_string())
+            smtp.sendmail(mail_from, dest, msgRoot.as_string())
         except Exception as msg:
             print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
             log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog,
@@ -274,7 +358,24 @@ def send_mail(dest, itemType, get_graph):
         smtp.quit()
         exit()
 
-def send_telegram(dest, itemType, get_graph):
+def send_telegram(dest, itemType, get_graph, key):
+    # Telegram settings | Configuracao do Telegram #########################################################################
+    api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
+    api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
+
+    try:
+        api_id = int(decrypt(key, api_id0))
+    except:
+        api_id = api_id0
+
+    try:
+        api_hash = str(decrypt(key, api_hash0))
+    except:
+        api_hash = api_hash0
+
+
+    app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
+
     dest = dest.lower()
     saudacao = salutation
     if saudacao:
@@ -294,22 +395,18 @@ def send_telegram(dest, itemType, get_graph):
         dest = dest[1:]
 
     with app:
-        try:
-            Contatos = app.get_contacts()
-        except:
-            pass
-
-        try:
-            Dialogos = app.iter_dialogs()
-        except:
-            pass
-
         flag = True
         while flag:
             try:
+                Contatos = app.get_contacts()
                 for contato in Contatos:
-                    Id = "{}".format(contato.id)
-                    nome = "{}".format(f"{contato.first_name} {contato.last_name}")
+                    try:
+                        Id = f"{contato.id}"
+                        nome = f"{contato.first_name} {contato.last_name}"
+                    except:
+                        print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
+                        exit()
+
                     username = contato.username
                     if username:
                         if username.lower() in dest or dest in Id or dest in nome.lower():
@@ -326,8 +423,9 @@ def send_telegram(dest, itemType, get_graph):
 
             try:
                 if flag:
+                    Dialogos = app.iter_dialogs()
                     for dialogo in Dialogos:
-                        Id = "{}".format(dialogo.chat.id)
+                        Id = f"{dialogo.chat.id}"
                         nome = "{}".format(dialogo.chat.title or f"{dialogo.chat.first_name} {dialogo.chat.last_name}")
                         username = dialogo.chat.username
 
@@ -343,10 +441,14 @@ def send_telegram(dest, itemType, get_graph):
                                 break
             except:
                 flag = False
-                if re.match("[0-9-]+", dest):
-                    Id = int(dest)
-                else:
-                    Id = dest
+                try:
+                    chat = app.get_chat(dest)
+                    Id = "{}".format(chat.id)
+                    dest = "{}".format(chat.title or f"{chat.first_name} {chat.last_name}")
+                except Exception as msg:
+                    print(msg.args[0])
+                    log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
+                    exit()
 
         sendMsg = """{}{} {}""".format(saudacao.format(dest), subject, body)
         if re.search("(0|3)", itemType):
@@ -386,6 +488,91 @@ def send_telegram(dest, itemType, get_graph):
                 logout_api()
                 exit()
 
+def send_whatsapp(destiny, itemType, get_graph, key):
+    line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
+    acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acessKey')
+    port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
+
+    try:
+       line = decrypt(key, line0)
+    except:
+       line = line0
+
+    try:
+        acessKey = decrypt(key, acessKey0)
+    except:
+        acessKey = acessKey0
+
+    try:
+        port = decrypt(key, port0)
+    except:
+        port = port0
+
+
+    saudacao = salutation
+    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'salutation.whatsapp')
+
+    if re.search("(sim|s|yes|y)", str(Saudacao).lower()):
+        if saudacao:
+            saudacao = salutation + ".\\n\\n"
+    else:
+        saudacao = ""
+
+    msg0 = body.replace("\r", "").split('\n ')[0].replace("\n", "\\n")
+    msg = "{}\\n{}".format(subject.replace(r"✅", r"\u2705"), msg0)
+    message0 = "{}{}".format(saudacao, msg)
+
+    valida = 0
+    message1 = ""
+    formatter = [("b", "*"), ("i", "_"), ("u", "")]
+    for f in formatter:
+        old, new = f
+        if re.search(r"(<(/)?{}>)".format(old), message0):
+            message1 = re.sub(r"(<(/)?{}>)".format(old), r"{}".format(new), message0)
+            valida += 1
+
+    if valida == 0:
+        message1 = message0
+
+    message = quote(base64.b64encode(message1.encode("utf-8")))
+    if re.search("(0|3)", itemType):
+        Graph = quote(base64.b64encode(get_graph.content))#.decode("ISO-8859-1"))
+        try:
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            # payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(AcessKey)
+            # url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=urllib.parse.quote_plus(message))
+            payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(key=acessKey, text=message, stream=Graph)
+            url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(port=port, line=line, destiny=destiny)
+            result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
+
+            if result.status_code != 200:
+                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+            else:
+                print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
+                log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+        except Exception as e:
+            print(e)
+            log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
+            exit()
+    else:
+        try:
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(acessKey)
+            url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=message)
+            result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
+
+            if result.status_code != 200:
+                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+            else:
+                print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
+                log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+        except Exception as e:
+            print(e)
+            log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
+            exit()
+
 def token():
     try:
         login_api = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
@@ -410,9 +597,11 @@ def token():
 
         elif 'error' in login_api:
             print('Zabbix: %s' % login_api["error"]["data"])
+            log.writelog('Zabbix: {0}'.format(login_api["error"]["data"]), arqLog, "ERROR")
             exit()
         else:
             print(login_api)
+            log.writelog('{0}'.format(login_api), arqLog, "ERROR")
             exit()
 
     except ValueError as e:
@@ -515,8 +704,24 @@ def getItemType():
 
     except Exception as msg:
         print(msg)
+        log.writelog('{0}'.format(msg), arqLog, "ERROR")
 
-def get_info(name=None):
+def get_info(key, name=None):
+    # Telegram settings | Configuracao do Telegram #########################################################################
+    api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
+    api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
+
+    try:
+        api_id = int(decrypt(key, api_id0))
+    except:
+        api_id = api_id0
+
+    try:
+        api_hash = str(decrypt(key, api_hash0))
+    except:
+        api_hash = api_hash0
+
+    app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
     ContA = 0
     with app:
         infos = ""
@@ -527,6 +732,8 @@ def get_info(name=None):
                 print("Esta função não está disponível para consultas com BOT\n")
             else:
                 print(msg.args[0])
+
+            log.writelog('{0}'.format(msg.args[0]), arqLog, "ERROR")
             exit()
 
         infos += ""
@@ -561,6 +768,79 @@ def get_info(name=None):
 
     return infos
 
+def get_cripto():
+    fileX = os.path.join(pathLogs, ".env.json")
+    if not os.path.exists(fileX):
+        os.popen(f"cat >> {fileX} << EOF\n{fileC}\nEOF")
+
+    JsonX = json.loads(os.popen(f"cat {fileX}").read())
+    # import ipdb; ipdb.set_trace()
+    textK0 = []
+    text = ""
+    for obj in JsonX:
+        if "code" == obj:
+            if not JsonX[obj]:
+                JsonX[obj] = keepass()
+            continue
+        textK = ""
+        for k in JsonX[obj]:
+            if not JsonX[obj][k]:
+                if not text:
+                    text += "Os seguintes itens não estão criptografados:\n\n"
+                if not textK:
+                    textK += f"{obj}: "
+                textK += f"{k}, "
+                textK0 += [k]
+
+        if textK:
+            text += f"{textK[:-2]}\n"
+
+    JsonX = json.dumps(JsonX)
+    os.popen(f"cat > {fileX} << EOF\n{JsonX}\nEOF")
+    return text, textK0, JsonX, fileX
+
+def create_cripto():
+    texto, textoKey, JsonX, fileX = get_cripto()
+    JsonX = json.loads(JsonX)
+    if texto:
+        config = path.format('configScripts.properties')
+        contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
+        tupla = []
+        resposta = input("\nExistem campos sem criptografia,\nDeseja criptografar (sim/não)? ")
+        if re.match("(s|sim|y|yes)", resposta.lower()):
+            textoKey = ", ".join(textoKey)
+            print(f"\nOs seguintes campos podem ser criptografados:\n{textoKey}")
+            criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
+            if [''] == criptoK:
+                exit()
+            for crip in criptoK:
+                valor = input(f"\nAgora informe um valor para o campo '{crip}': ")
+                # import ipdb; ipdb.set_trace()
+                tupla.append((crip, valor))
+                for js in JsonX:
+                    if "code" != js:
+                        for k in JsonX[js]:
+                            if not JsonX[js][k]:
+                                if crip == k:
+                                    JsonX[js][k] = True
+
+            # import ipdb; ipdb.set_trace()
+            key = JsonX['code']
+            for t in tupla:
+                k, v = t
+                valueC = encrypt(key, v)
+                valueR = re.search(f"\n{k} ?= ?(.*)\n", contArq).group(1)
+                contArq = re.sub(f"{valueR}", f"{valueC}", contArq)
+
+        contArq = contArq.rstrip()
+        os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
+
+        Json = json.dumps(JsonX)
+        arquivo = open("{0}".format(fileX), "w")
+        arquivo.writelines(Json)
+        arquivo.close()
+    return JsonX
+
 def main():
     global subject, body, itemid, itemname, period, color
     try:
@@ -577,8 +857,8 @@ def main():
         subject = '<b>testando o envio com o item</b>:'
         body = '{0}'.format(itemname)
 
-        if sys.version_info < (3, 0):
-            body = itemname.encode('utf-8')
+        # if sys.version_info < (3, 0):
+        #     body = itemname.encode('utf-8')
 
         dest = sys.argv[1]
         destino = destinatarios(dest)
@@ -595,23 +875,31 @@ def main():
             if re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
                 emails.append(x)
 
+            elif re.match("^[0-9]+$", x):
+                send_whatsapp(x, item_type, get_graph, codeKey)
+
             else:
                 telegram = x.replace("_", " ")
-                send_telegram(telegram, item_type, get_graph)
+                send_telegram(telegram, item_type, get_graph, codeKey)
 
         if [] != emails:
-            send_mail(emails, item_type, get_graph)
+            send_mail(emails, item_type, get_graph, codeKey)
 
     except Exception as msg:
         print(msg)
+        log.writelog(''.format(msg), arqLog, "WARNING")
 
 if __name__ == '__main__':
+    JSON = create_cripto()
+    codeKey = JSON['code']
+
     if "info" == sys.argv[1]:
         try:
             nome = sys.argv[2]
         except:
             nome = None
-        r = get_info(nome)
+
+        r = get_info(codeKey, nome)
         print(r)
         exit()
 

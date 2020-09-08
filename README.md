@@ -51,7 +51,12 @@ O "How to" foi testado no ZABBIX 3.0 ao 5.0 no Debian 8 ao 10, Ubuntu 14 ao 20 e
 	</li>
 	<li>
 		<strong>
-			<a href=#criando-chave-api>Chave API</a>
+			<a href=#criando-chave-api-whatsapp>Chave API WhatsApp</a>
+		</strong>
+	</li>
+    <li>
+		<strong>
+			<a href=#criando-chave-api-telegram>Chave API Telegram</a>
 		</strong>
 	</li>
 	<li>
@@ -123,7 +128,32 @@ O "How to" foi testado no ZABBIX 3.0 ao 5.0 no Debian 8 ao 10, Ubuntu 14 ao 20 e
 Existe um local padrão onde fica os scripts, que tem 2 locais possíveis dependendo da forma de instalação do ZABBIX, compilando (<code>/usr/local/share/zabbix/alertscripts/</code>) ou por pacote (<code>/usr/lib/zabbix/alertscripts/</code>), respectivamente.<br>
 Ao final da execução do script, ele indicará qual pasta você acessará.
 
-# Criando Chave API:
+# Criando Chave API WhatsApp:
+
+<p><s>Para usar este envio é necessário contratar o serviço, em conversa com o responsável consegui um desconto, 
+basta informar o cupom <code><b>zabbix20S</b></code> e ganhe 50% de desconto. </s></p>
+ 
+ <!--
+Houve um problema com o site do desenvolvedor e por enquanto ele estará atentendo via telefone (WhatsApp ou Telegram) 
+<i>"Thiago Pedro" 
+(<a href="https://t.me/Thiago_Pedro" class="wikilink2" title="Conversar com ele" rel="nofollow">@Thiago_Pedro</a></i> - 5527998022075)
+-->
+
+O desenvolverdor liberou o acesso ao envio por alguns dias para realização de testes, 
+então nenhuma ação será necessária agora, basta seguir com o restante da configuração. 
+
+<u><b>Depois será necessário a contratação do serviço, assim que terminar o período de teste 
+colocarei todas as informações necessárias aqui neste bloco de como entrar em contato e contratar.</b></u>
+
+
+<!--
+Para iniciarmos, <a href="https://my.telegram.org/auth?to=apps" class="wikilink2" title="API Telegram" rel="nofollow"><b>CLIQUE AQUI</b></a> e 
+faça o login usando sua conta para criar a <b>chave API do Telegram</b>:
+
+Vamos precisar do <i><b>api_id</b></i> e <i><b>api_hash</b></i> no próximo passo
+-->
+
+# Criando Chave API Telegram:
 
 Para iniciarmos, <a href="https://my.telegram.org/auth?to=apps" class="wikilink2" title="API Telegram" rel="nofollow"><b>CLIQUE AQUI</b></a> e 
 faça o login usando sua conta para criar a <b>chave API do Telegram</b>:
@@ -136,7 +166,7 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 
 <b>OBS:</b><br>
 <b>1 – </b>O usuário que você declarar no campo <i>“user”</i> precisa ter permissão no mínimo de leitura no ambiente.<br>
-<b>2 – </b>Os campos contidos em [PathSectionEmail] e [PathSectionTelegram], são opcionais, logo se for usar somente telegram, não é necessário preencher a parte do email, assim como de forma inversa.<br>
+<b>2 – </b>Os campos contidos em [PathSectionEmail], [PathSectionTelegram] e [PathSectionWhatsApp], são opcionais, logo se for usar somente telegram, não é necessário preencher a parte do email, assim como de forma inversa.<br>
 <b>3 – </b>Se usar gmail, é preciso alterar o acesso à conta para aplicativos, se tiver "Verificação em duas etapas" ativado, é necessário criar uma "Senha de app", crie 
 <a href="https://support.google.com/accounts/answer/185833" class="wikilink2" title="App MAIS seguros" rel="nofollow">Aqui</a>.<br>Caso não tenha verificação em duas etapas, pode somente ativar "Acesso a app menos seguros", altere 
 <a href="https://support.google.com/accounts/answer/6010255?hl=pt-BR" class="wikilink2" title="App menos seguros" rel="nofollow">Aqui</a>.<br>
@@ -181,6 +211,17 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 “api.hash” = '12asdc64vfda19df165asdvf984dbf'</font></font></li>
 </ul>
 
+<blockquote>[PathSectionWhatsApp]</blockquote>
+<ul class="task-list">
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
+“line” = '12345678'</font></font></li>
+
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
+“acessKey” = '12asdc64vfda19df165asdvf984dbf'</font></font></li>
+
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
+“port” = '12asdc64vfda19df165asdvf984dbf'</font></font></li>
+</ul>
 
 # Consultando Configuração
 
@@ -269,7 +310,9 @@ Criando a Ação:
 
 A “<i>Mensagem Padrão</i>” na aba <b>“<u>Ação</u>”</b> existe somente com uma “exigência”, a primeira linha deve permanecer com as macros/variáveis abaixo ilustradas (<i>as macros/variáveis <b>entre as "#" </b></i>), podendo editar da segunda linha em diante. 
 <br>
-<h3><a id="user-content-features" class="anchor" href="#features" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" role="img" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1h-1c-1.5 0-3-1.69-3-3.5s1.55-3.5 3-3.5h4c1.45 0 3 1.69 3 3.5 0 1.41-0.91 2.72-2 3.25v-1.16c0.58-0.45 1-1.27 1-2.09 0-1.28-1.02-2.5-2-2.5H4c-0.98 0-2 1.22-2 2.5s1 2.5 2 2.5z m9-3h-1v1h1c1 0 2 1.22 2 2.5s-1.02 2.5-2 2.5H9c-0.98 0-2-1.22-2-2.5 0-0.83 0.42-1.64 1-2.09v-1.16c-1.09 0.53-2 1.84-2 3.25 0 1.81 1.55 3.5 3 3.5h4c1.45 0 3-1.69 3-3.5s-1.5-3.5-3-3.5z"></path></svg></a>Imagem da Mensagem na Ação:</h3>
+<h3><a id="user-content-features" class="anchor" href="#features" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" role="img" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1h-1c-1.5 0-3-1.69-3-3.5s1.55-3.5 3-3.5h4c1.45 0 3 1.69 3 3.5 0 1.41-0.91 2.72-2 3.25v-1.16c0.58-0.45 1-1.27 1-2.09 0-1.28-1.02-2.5-2-2.5H4c-0.98 0-2 1.22-2 2.5s1 2.5 2 2.5z m9-3h-1v1h1c1 0 2 1.22 2 2.5s-1.02 2.5-2 2.5H9c-0.98 0-2-1.22-2-2.5 0-0.83 0.42-1.64 1-2.09v-1.16c-1.09 0.53-2 1.84-2 3.25 0 1.81 1.55 3.5 3 3.5h4c1.45 0 3-1.69 3-3.5s-1.5-3.5-3-3.5z"></path></svg></a>
+Imagem da Mensagem na Ação:
+</h3>
 
 <img src="https://lh3.googleusercontent.com/pw/ACtC-3fxK4Ho3_t5sT98nHLkfy2rZM7pMEG9CrZrcJe967UXCmEKpswUsSJn66NhF94fc39lnukUPUfaP4joCtkZjaM0MTe_Y22DCqwIzx-kN34auXoGmDnlgalz4XG7gJW1HWl-GP4PFt6cK41TTPcLgIswxg=w744-h341-no?authuser=0"/><br><br>
 
@@ -317,6 +360,9 @@ Vamos entender um pouco as funções configuráveis do arquivo de configuração
 	<li>
 		salutation - Ativa/Desativa todas as saudações
 	</li>
+	<li>
+		path.logs - indica o local onde o log será salvo, o "default" é um diretório "log" no mesmo local do script, se alterar precisa garantir que o usuário zabbix tenha permissão para escrita este local. 
+	</li>
 </ul>
 
 <blockquote>[PathSectionEmail]</blockquote>
@@ -339,6 +385,12 @@ Vamos entender um pouco as funções configuráveis do arquivo de configuração
 	</li>
 </ul>
 
+<blockquote>[PathSectionWhatsApp]</blockquote>
+<ul>
+    <li>
+		salutation.whatsapp - Ativa/Desativa a saudação do whatsapp
+	</li>
+</ul>
 
 # Conclusão
 
