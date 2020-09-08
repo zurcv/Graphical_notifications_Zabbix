@@ -275,6 +275,12 @@ vá até o paramemtro <code>\# Timeout=3</code> descomente e aumente para 30, fi
 <code>Timeout=30</code><br>
 dessa forma fica garantido a entrega.<br><br>
 
+<b>3 – </b> A estrutura de teste para o WhatsApp será (prefixo para o Brasil, DDD e número): <code>5522988776655</code>;<br>
+Para Telegram será: prioritariamente por ID (podendo usar também: 'Nome Sobrenome' ou '@usuário' se não estiver usando bot);<br>
+E para Email será: usuario@provedor.com.
+Para realizar 3 envios ao mesmo tempo, basta colocar as informações separados por vígula, çor Ex:
+<pre>sudo -u zabbix ./notificacoes-teste.py "123456789, 5522988776655, usuario@provedor.com"</pre>
+
 
 Script para realização do teste e iniciar a configuração:<br>
 <b>Script, ID, Nome ou user.</b><br>
