@@ -243,7 +243,7 @@ Para consultar a configuração de um usuário, grupo ou canal específico, exec
 
 <b>Script info ID, Nome ou user.</b><br>
 Exs:<br>
-<pre>sudo -u zabbix ./notificacoes-teste.py "info" "123456789"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py "info" "-123456789"</pre>
 ou
 <pre>sudo -u zabbix ./notificacoes-teste.py "info" "Nome Sobrenome"</pre>
 ou
@@ -267,7 +267,7 @@ Comando para teste
 # Comando para teste
 
 <b>OBS:</b><br>
-<b>1 – </b>"123456789", "Nome Sobrenome" ou "usuário" são informações fictícias para exemplificar, busque um UserID ou nome de usuário válido no seu ambiente, se for grupo ou canal use prioritáriamente o "id";<br><br>
+<b>1 – </b>"-123456789", "Nome Sobrenome" ou "usuário" são informações fictícias para exemplificar, busque um UserID ou nome de usuário válido no seu ambiente, se for grupo ou canal use prioritáriamente o "id";<br><br>
 
 <b>2 – </b> É recomendado aumentar o tempo de timeout da aplicação, então no arquivo de configuração do server.<br>
 (se não mudou o local padrão, estará aqui <code>/etc/zabbix/zabbix_server.conf</code> ou aqui <code>/usr/local/etc/zabbix_server.conf</code>)
@@ -279,13 +279,13 @@ dessa forma fica garantido a entrega.<br><br>
 Para Telegram será: prioritariamente por ID (podendo usar também: 'Nome Sobrenome' ou '@usuário' se não estiver usando bot);<br>
 E para Email será: usuario@provedor.com.
 Para realizar 3 envios ao mesmo tempo, basta colocar as informações separados por vígula, çor Ex:
-<pre>sudo -u zabbix ./notificacoes-teste.py "123456789, 5522988776655, usuario@provedor.com"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py "-123456789, 5522988776655, usuario@provedor.com"</pre>
 
 
 Script para realização do teste e iniciar a configuração:<br>
 <b>Script, ID, Nome ou user.</b><br>
 Exs:<br>
-<pre>sudo -u zabbix ./notificacoes-teste.py "123456789"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py "-123456789"</pre>
 ou
 <pre>sudo -u zabbix ./notificacoes-teste.py "Nome Sobrenome"</pre>
 ou
