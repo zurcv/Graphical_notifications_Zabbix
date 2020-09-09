@@ -741,6 +741,7 @@ def decrypt(key, source, decode=True):
     return data[:-padding].decode("ISO-8859-1")  # remove the padding
 
 def main():
+    codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
     if nograph not in sys.argv:
         item_type = getItemType(itemid)
         get_graph = getgraph(itemname, period)
@@ -758,7 +759,7 @@ def main():
         if re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
             emails.append(x)
 
-        elif re.match("^[0-9]+$", x):
+        elif re.match(f"^{codDDI}[0-9]+$", x):
             send_whatsapp(x, item_type, get_graph, codeKey)
 
         else:
