@@ -175,52 +175,52 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“url” = 'http://127.0.0.1/zabbix' - URL de acesso ao FRONT com "http://" 
+“url” = http://127.0.0.1/zabbix - URL de acesso ao FRONT com "http://" 
 </font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“user” = 'Admin'
+“user” = Admin
 </font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“pass” = 'zabbix'
+“pass” = zabbix
 </font></font></li>
 </ul>
 
 <blockquote>[PathSectionEmail]</blockquote>
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“smtp_server” = 'smtp.gmail.com:587'
+“smtp_server” = smtp.gmail.com:587
 </font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“mail_user” = 'SeuEmail@gmail.com'
+“mail_user” = SeuEmail@gmail.com
 </font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“mail_pass” = 'SuaSenha'
+“mail_pass” = SuaSenha
 </font></font></li>
 </ul>
 
 <blockquote>[PathSectionTelegram]</blockquote>
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“api.id” = '12345678'</font></font></li>
+“api.id” = 12345678</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“api.hash” = '12asdc64vfda19df165asdvf984dbf'</font></font></li>
+“api.hash” = 12asdc64vfda19df165asdvf984dbf</font></font></li>
 </ul>
 
 <blockquote>[PathSectionWhatsApp]</blockquote>
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“line” = '12345678'</font></font></li>
+“line” = 5522988776655</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“acessKey” = '12asdc64vfda19df165asdvf984dbf'</font></font></li>
+“acessKey” = 12asdc64vfda19df165asdvf984dbf</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“port” = '12asdc64vfda19df165asdvf984dbf'</font></font></li>
+“port” = 12345</font></font></li>
 </ul>
 
 # Consultando Configuração
@@ -377,7 +377,7 @@ Vamos entender um pouco as funções configuráveis do arquivo de configuração
 		salutation.email - Ativa/Desativa a saudação do email
 	</li>
 	<li>
-		email_from - descreve o remetente.
+		mail.from - descreve o remetente.
 	</li>
 </ul>
 
@@ -395,6 +395,9 @@ Vamos entender um pouco as funções configuráveis do arquivo de configuração
 <ul>
     <li>
 		salutation.whatsapp - Ativa/Desativa a saudação do whatsapp
+	</li>
+    <li>
+		cod.ddi - Faz referência ao país do destinatário para whatsapp
 	</li>
 </ul>
 
