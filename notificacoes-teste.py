@@ -442,6 +442,8 @@ def send_telegram(dest, itemType, get_graph, key):
             except:
                 flag = False
                 try:
+                    if re.match("^([0-9-]+)$", dest):
+                        dest = int(dest)
                     chat = app.get_chat(dest)
                     Id = "{}".format(chat.id)
                     dest = "{}".format(chat.title or f"{chat.first_name} {chat.last_name}")

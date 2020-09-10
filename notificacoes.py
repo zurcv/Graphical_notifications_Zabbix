@@ -416,6 +416,8 @@ def send_telegram(dest, itemType, get_graph, key):
             except:
                 flag = False
                 try:
+                    if re.match("^([0-9-]+)$", dest):
+                        dest = int(dest)
                     chat = app.get_chat(dest)
                     Id = "{}".format(chat.id)
                     dest = "{}".format(chat.title or f"{chat.first_name} {chat.last_name}")
@@ -424,7 +426,6 @@ def send_telegram(dest, itemType, get_graph, key):
                     log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
                     exit()
 
-        # saudacao = salutation + " <b><u>{0}</u></b> \n\n"
         sendMsg = """{}{} {}""".format(saudacao.format(dest), sys.argv[2], msg)
         if re.search("(0|3)", itemType):
             try:
