@@ -234,20 +234,24 @@ depois que der “Enter”, receberá um código por SMS e/ou no aplicativo
 adicione o código e estará pronto.<br>
 
 <b>2 - </b> Caso esteja usando conta invés de bot, terá a vantagem de usar este módulo de consulta, 
-se estiver usando bot <b>DESCONSIDERE ESTE PASSO E VÁ DIRETO AO <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>COMANDO PARA TESTE</u></a> !</b> <br>
+se estiver usando bot, este comando só servirá para finalizarmos a vinculação do remetente.
 
-Poderá executar este comando para ter a quantidade e nome de todos os seus chats:
-<pre>sudo -u zabbix ./notificacoes-teste.py "info"</pre> <br>
+<!--
+<b>DESCONSIDERE ESTE PASSO E VÁ DIRETO AO <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>COMANDO PARA TESTE</u></a> !</b> <br>
+-->
+
+Este comando, trará a quantidade e as informações de todos os seus chats, como nome e ID:
+<pre>sudo -u zabbix ./notificacoes-teste.py --infoAll</pre> <br>
 
 Para consultar a configuração de um usuário, grupo ou canal específico, execute o comando abaixo:
 
 <b>Script info ID, Nome ou user.</b><br>
 Exs:<br>
-<pre>sudo -u zabbix ./notificacoes-teste.py "info" "-123456789"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py --info "-123456789"</pre>
 ou
-<pre>sudo -u zabbix ./notificacoes-teste.py "info" "Nome Sobrenome"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py --info "Nome Sobrenome"</pre>
 ou
-<pre>sudo -u zabbix ./notificacoes-teste.py "info" "usuário"</pre><br>
+<pre>sudo -u zabbix ./notificacoes-teste.py --info "usuário"</pre><br>
 
 Pegue o “ID”, o “nome de cadastro” ou o "nome de registro" que aparecerá para executar o teste e posteriormente colocar no zabbix.
 
@@ -279,17 +283,17 @@ dessa forma fica garantido a entrega.<br><br>
 Para Telegram será: prioritariamente por ID (podendo usar também: 'Nome Sobrenome' ou '@usuário' se não estiver usando bot);<br>
 E para Email será: usuario@provedor.com.
 Para realizar 3 envios ao mesmo tempo, basta colocar as informações separados por vígula, çor Ex:
-<pre>sudo -u zabbix ./notificacoes-teste.py "-123456789, 5522988776655, usuario@provedor.com"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py --send "-123456789, 5522988776655, usuario@provedor.com"</pre>
 
 
 Script para realização do teste e iniciar a configuração:<br>
 <b>Script, ID, Nome ou user.</b><br>
 Exs:<br>
-<pre>sudo -u zabbix ./notificacoes-teste.py "-123456789"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py --send "-123456789"</pre>
 ou
-<pre>sudo -u zabbix ./notificacoes-teste.py "Nome Sobrenome"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py --send "Nome Sobrenome"</pre>
 ou
-<pre>sudo -u zabbix ./notificacoes-teste.py "usuário"</pre>
+<pre>sudo -u zabbix ./notificacoes-teste.py --send "usuário"</pre>
 
 # Configurando o envio:
 
