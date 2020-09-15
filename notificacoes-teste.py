@@ -3,7 +3,6 @@
 
 # Envio de gráfico por WhatsApp, Telegram e Email através do ZABBIX (Send zabbix alerts graph WhatsApp, Telegram e Mail)
 #
-#
 # Copyright (C) <2016>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -26,6 +25,9 @@
 pythonVersion = 3.6
 import os, sys, re, json, time, smtplib
 
+if len(sys.argv) == 1:
+    sys.argv.append("-h")
+
 tag = True
 while tag:
     try:
@@ -37,8 +39,8 @@ while tag:
         tag = False
 
     except ModuleNotFoundError:
-        os.popen("/usr/bin/python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
-        time.sleep(3)
+        print("Execute o comando:\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
+        exit()
     except Exception as e:
         print(f"{e}")
         exit()
@@ -49,6 +51,8 @@ import email.utils
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+import argparse
+
 import configparser
 conf = configparser
 
@@ -153,6 +157,9 @@ if not os.path.exists(pathLogs):
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
+arqJson = ".env.json"
+fileX = os.path.join(pathLogs, arqJson)
+
 fileC = """{
     "code": false,
     "email": {
@@ -708,18 +715,18 @@ def getItemType():
         print(msg)
         log.writelog('{0}'.format(msg), arqLog, "ERROR")
 
-def get_info(key, name=None):
+def get_info(name=None):
     # Telegram settings | Configuracao do Telegram #########################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
 
     try:
-        api_id = int(decrypt(key, api_id0))
+        api_id = int(decrypt(codeKey, api_id0))
     except:
         api_id = api_id0
 
     try:
-        api_hash = str(decrypt(key, api_hash0))
+        api_hash = str(decrypt(codeKey, api_hash0))
     except:
         api_hash = api_hash0
 
@@ -742,11 +749,16 @@ def get_info(key, name=None):
         if name:
             for dialogo in dialogos:
                 Id = "Id: {}".format(dialogo.chat.id)
-                if dialogo.chat.title:
-                    nome = "Nome: {}".format(dialogo.chat.title)
+                if dialogo.chat.title or '777000' in Id:
+                    nome = "Nome: {}".format(dialogo.chat.title or dialogo.chat.first_name)
                 else:
-                    username = dialogo.chat.username
-                    nome = "Nome: {} {}\nNonde de usuário: {}".format(dialogo.chat.first_name, dialogo.chat.last_name, username)
+                    nome = f"Nome: {dialogo.chat.first_name} "
+                    if dialogo.chat.last_name:
+                        nome += "{}".format(dialogo.chat.last_name)
+
+                    if dialogo.chat.username:
+                        nome += f"\nNome de usuário: {dialogo.chat.username}"
+
                 if name.lower() in nome.lower() or name in Id:
                     if "" == infos:
                         infos += "\nChats encontrados (ContA):\n\n"
@@ -770,12 +782,25 @@ def get_info(key, name=None):
 
     return infos
 
-def get_cripto():
-    fileX = os.path.join(pathLogs, ".env.json")
+def create_file():
+    # import ipdb; ipdb.set_trace()
     if not os.path.exists(fileX):
-        os.popen(f"cat >> {fileX} << EOF\n{fileC}\nEOF")
+        JsonX = json.loads(fileC)
+        for obj in JsonX:
+            if "code" == obj:
+                if not JsonX[obj]:
+                    JsonX[obj] = keepass()
+                break
+        JsonXR = json.dumps(JsonX)
+        os.popen(f"cat >> {fileX} << EOF\n{JsonXR}\nEOF")
 
-    JsonX = json.loads(os.popen(f"cat {fileX}").read())
+    else:
+        JsonX = json.loads(os.popen(f"cat {fileX}").read())
+
+    return JsonX
+
+def get_cripto():
+    JsonX = create_file()
     # import ipdb; ipdb.set_trace()
     textK0 = []
     text = ""
@@ -787,8 +812,6 @@ def get_cripto():
         textK = ""
         for k in JsonX[obj]:
             if not JsonX[obj][k]:
-                if not text:
-                    text += "Os seguintes itens não estão criptografados:\n\n"
                 if not textK:
                     textK += f"{obj}: "
                 textK += f"{k}, "
@@ -799,40 +822,29 @@ def get_cripto():
 
     JsonX = json.dumps(JsonX)
     os.popen(f"cat > {fileX} << EOF\n{JsonX}\nEOF")
-    return text, textK0, JsonX, fileX
+    return text, textK0, JsonX
 
 def create_cripto():
-    texto, textoKey, JsonX, fileX = get_cripto()
+    texto, textoKey, JsonX = get_cripto()
     JsonX = json.loads(JsonX)
+    key = JsonX['code']
     if texto:
         config = path.format('configScripts.properties')
         contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
-        tupla = []
-        resposta = input("\nExistem campos sem criptografia,\nDeseja criptografar (sim/não)? ")
-        if re.match("(s|sim|y|yes)", resposta.lower()):
-            textoKey = ", ".join(textoKey)
-            print(f"\nOs seguintes campos podem ser criptografados:\n{textoKey}")
-            criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
-            if [''] == criptoK:
-                exit()
-            for crip in criptoK:
-                valor = input(f"\nAgora informe um valor para o campo '{crip}': ")
-                # import ipdb; ipdb.set_trace()
-                tupla.append((crip, valor))
-                for js in JsonX:
-                    if "code" != js:
-                        for k in JsonX[js]:
-                            if not JsonX[js][k]:
-                                if crip == k:
-                                    JsonX[js][k] = True
-
-            # import ipdb; ipdb.set_trace()
-            key = JsonX['code']
-            for t in tupla:
-                k, v = t
-                valueC = encrypt(key, v)
-                valueR = re.search(f"\n{k} ?= ?(.*)\n", contArq).group(1)
-                contArq = re.sub(f"{valueR}", f"{valueC}", contArq)
+        textoKey = ", ".join(textoKey)
+        print(f"\nOs seguintes campos podem ser criptografados:\n{textoKey}")
+        criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
+        if [''] == criptoK:
+            exit()
+        for crip in criptoK:
+            for js in JsonX:
+                if "code" != js:
+                    for k in JsonX[js]:
+                        if crip == k:
+                            valueR = re.search(f"\n{crip} ?= ?(.*)\n", contArq).group(1)
+                            valueC = encrypt(key, valueR)
+                            contArq = contArq.replace(f"{valueR}", f"{valueC}")
+                            JsonX[js][k] = True
 
         contArq = contArq.rstrip()
         os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
@@ -841,9 +853,108 @@ def create_cripto():
         arquivo = open("{0}".format(fileX), "w")
         arquivo.writelines(Json)
         arquivo.close()
-    return JsonX
+    else:
+        print(f"\nNão há campos para criptografar.\n")
+        exit()
 
-def main():
+def update_reEncrypt():
+    JsonXR = json.loads(fileC)
+    JsonX = json.loads(os.popen("cat {}".format(fileX)).read())
+    config = path.format('configScripts.properties')
+    contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
+    tupla = []
+    textoKeyR = []
+    for obj in JsonXR:
+        if "code" == obj:
+            if not JsonXR[obj]:
+                JsonXR[obj] = keepass()
+            continue
+        textK = ""
+        for k in JsonXR[obj]:
+            if not JsonXR[obj][k]:
+                if not textK:
+                    textK += f"{obj}: "
+                textK += f"{k}, "
+                textoKeyR += [k]
+
+    textoKeyR = ", ".join(textoKeyR)
+    print(f"\nOs seguintes campos podem ser criptografados:\n{textoKeyR}")
+    criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
+    if [''] == criptoK:
+        exit()
+    for crip in criptoK:
+        valor = input(f"\nAgora informe um valor para o campo '{crip}': ")
+        # import ipdb; ipdb.set_trace()
+        tupla.append((crip, valor))
+        for js in JsonX:
+            if "code" != js:
+                for k in JsonX[js]:
+                    if not JsonX[js][k]:
+                        if crip == k:
+                            JsonX[js][k] = True
+
+    # import ipdb; ipdb.set_trace()
+    key = JsonX['code']
+    for t in tupla:
+        k, v = t
+        valueC = encrypt(key, v)
+        valueR = re.search(f"\n{k} ?= ?(.*)\n", contArq).group(1)
+        contArq = re.sub(f"{valueR}", f"{valueC}", contArq)
+
+    contArq = contArq.rstrip()
+    os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
+
+    Json = json.dumps(JsonX)
+    arquivo = open("{0}".format(fileX), "w")
+    arquivo.writelines(Json)
+    arquivo.close()
+
+def update_decrypt():
+    JsonX = json.loads(os.popen("cat {}".format(fileX)).read())
+    key = JsonX['code']
+    config = path.format('configScripts.properties')
+    contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
+    textoKeyR = []
+    for obj in JsonX:
+        if "code" == obj:
+            if not JsonX[obj]:
+                JsonX[obj] = keepass()
+            continue
+        textK = ""
+        for k in JsonX[obj]:
+            if JsonX[obj][k]:
+                if not textK:
+                    textK += f"{obj}: "
+                textK += f"{k}, "
+                textoKeyR += [k]
+
+    textoKeyR = ", ".join(textoKeyR)
+    if not textoKeyR:
+        print(f"\nNão há campos para descriptografar.\n{textoKeyR}")
+        exit()
+    print(f"\nOs seguintes campos podem ser descriptografados:\n{textoKeyR}")
+    criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
+    if [''] == criptoK:
+        exit()
+    for crip in criptoK:
+        for js in JsonX:
+            if "code" != js:
+                for k in JsonX[js]:
+                    if crip == k:
+                        valueR = re.search(f"\n{crip} ?= ?(.*)\n", contArq).group(1)
+                        valueC = decrypt(key, valueR)
+                        contArq = contArq.replace(f"{valueR}", f"{valueC}")
+                        JsonX[js][k] = False
+
+    contArq = contArq.rstrip()
+    os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
+
+    Json = json.dumps(JsonX)
+    arquivo = open("{0}".format(fileX), "w")
+    arquivo.writelines(Json)
+    arquivo.close()
+
+def main2():
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
     global subject, body, itemid, itemname, period, color
     try:
@@ -860,10 +971,7 @@ def main():
         subject = '<b>testando o envio com o item</b>:'
         body = '{0}'.format(itemname)
 
-        # if sys.version_info < (3, 0):
-        #     body = itemname.encode('utf-8')
-
-        dest = sys.argv[1]
+        dest = sys.argv[2]
         destino = destinatarios(dest)
 
         if nograph in sys.argv:
@@ -892,21 +1000,51 @@ def main():
         print(msg)
         log.writelog(''.format(msg), arqLog, "WARNING")
 
-if __name__ == '__main__':
-    JSON = create_cripto()
+def main():
+    global auth, codeKey
+    JSON = create_file()
     codeKey = JSON['code']
 
-    if "info" == sys.argv[1]:
-        try:
-            nome = sys.argv[2]
-        except:
-            nome = None
-
-        r = get_info(codeKey, nome)
-        print(r)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--infoAll', action="store_true", help="Consult all information")
+    parser.add_argument('--encrypt', action="store_true", help="Encrypt information")
+    parser.add_argument('--decrypt', action="store_true", help="Decrypt information")
+    parser.add_argument('--reEncrypt', action="store_true", help="Re-encrypt information")
+    parser.add_argument('--info', action="store", dest="contact", help="Consult specific user/chat information")
+    parser.add_argument('--send', action="store", dest="destiny", help="Send test")
+    try:
+        args = parser.parse_args()
+    except:
+        print("\n")
         exit()
 
-    else:
+    if args.encrypt:
+        create_cripto()
+        exit()
+
+    elif args.reEncrypt:
+        update_reEncrypt()
+        exit()
+
+    elif args.decrypt:
+        update_decrypt()
+        exit()
+
+    elif args.destiny:
         auth = token()
-        main()
+        main2()
         logout_api()
+        exit()
+
+    elif args.contact:
+        nome = args.contact
+
+    elif args.infoAll:
+        nome = None
+
+    r = get_info(nome)
+    print(r)
+    exit()
+
+if __name__ == '__main__':
+    main()
