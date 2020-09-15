@@ -3,7 +3,6 @@
 
 # Envio de gráfico por WhatsApp, Telegram e Email através do ZABBIX (Send zabbix alerts graph WhatsApp, Telegram e Mail)
 #
-#
 # Copyright (C) <2016>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -25,19 +24,12 @@
 
 import os, sys, re, json, time, smtplib
 
-tag = True
-while tag:
-    try:
-        import requests, urllib3
-        from pyrogram import Client
-        tag = False
+if len(sys.argv) <= 2:
+    print("\nEste script é pra ser executado pelo ZABBIx e não manualmente.\nPara realização de teste use o script:\n\nsudo -u zabbix ./notificacoes-teste.py -h\n")
+    exit()
 
-    except ModuleNotFoundError:
-        os.popen("/usr/bin/python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
-        time.sleep(3)
-    except Exception as e:
-        print(f"{e}")
-        exit()
+import requests, urllib3
+from pyrogram import Client
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -113,6 +105,8 @@ if not os.path.exists(pathLogs):
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
+arqJson = ".env.json"
+fileX = os.path.join(pathLogs, arqJson)
 
 import logging.config
 import traceback
@@ -723,7 +717,6 @@ def ack(dest, message):
             data=json.dumps(Json))
 
 def get_cripto():
-    fileX = os.path.join(pathLogs, ".env.json")
     JsonX = json.loads(os.popen(f"cat {fileX}").read())
     return JsonX
 
