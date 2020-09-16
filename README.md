@@ -226,7 +226,7 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 # Consultando Configuração
 
 <b>OBS:</b><br>
-<b>1 – </b> Ao executtar o comando abaixo, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
+<b>1 – </b> Ao executar o comando abaixo, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
 se optar por usar uma conta, use a seguinte estrutura de telefone 
 <code>5522988776655</code> (prefixo para o Brasil, DDD e número), 
 depois que der “Enter”, receberá um código por SMS e/ou no aplicativo 
