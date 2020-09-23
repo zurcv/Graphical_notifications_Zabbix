@@ -139,7 +139,16 @@ def decrypt(key, source, decode=True):
         raise ValueError("Invalid padding...")
     return data[:-padding].decode("ISO-8859-1")  # remove the padding
 
+def load_json(File):
+    with open(File, 'r') as f:
+        return json.load(f)
+
+def write_json(fileName, Json):
+    with open(fileName, 'w') as f:
+        json.dump(Json, f, ensure_ascii=False, indent=True)
+
 # Diretórios
+
 # Log path | Diretório do log
 projeto = sys.argv[0].split("/")[-1:][0].split(".")[0]
 logName = '{0}.log'.format(projeto)
@@ -157,6 +166,68 @@ if not os.path.exists(pathLogs):
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
+arqConfig = path.format('configScripts.properties')
+configDefault = """[PathSection]
+url = http://127.0.0.1/zabbix
+user = Admin
+pass = zabbix
+height = 200
+width = 900
+stime = 3600
+ack = yes
+salutation = yes
+path.logs = Default
+
+[PathSectionEmail]
+salutation.email = yes
+mail.from = ZABBIX Monitoring <monitoring@zabbix.com>
+smtp.server = smtp.gmail.com:587
+mail.user = SeuEmail@gmail.com
+mail.pass = SuaSenha
+
+[PathSectionTelegram]
+salutation.telegram = yes
+path.graph = /tmp
+api.id = 1234567
+api.hash = 12asdc64vfda19df165asdvf984dbf45
+
+[PathSectionWhatsApp]
+salutation.whatsapp = yes
+cod.ddi = 55
+line = 5511950287353
+acessKey = XGja6Sgtz0F01rbWNDTc
+port = 13008"""
+
+if not os.path.exists(arqConfig):
+    contArq = configDefault
+    # os.popen(f"cat > {pathConfig} << EOF\n{configDefault} \nEOF")
+
+else:
+    fileIn = f"{configDefault}".split("\n")
+    fileOut = os.popen(f"cat {arqConfig}").read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
+    contArq = ""
+    for lineIn in fileIn:
+        lineIn = lineIn
+        linhaIn = re.search(f"(.*) ?= ?(.*)", lineIn)
+        if linhaIn:
+            keyIn = linhaIn.group(1).rstrip()
+            if keyIn in fileOut:
+                valueOut = re.search(f"({keyIn}) ?= ?(.*)", fileOut).group()
+                if " = " not in valueOut:
+                    contArq += f"{valueOut.replace('=',' = ')}\n"
+            else:
+                contArq += f"{lineIn}\n"
+            continue
+
+        contArq += f"{lineIn}\n"
+        continue
+
+    contArq = contArq.rstrip()
+
+arquivo = open(f"{arqConfig}", "w")
+arquivo.writelines(contArq)
+arquivo.close()
+
 arqJson = ".env.json"
 fileX = os.path.join(pathLogs, arqJson)
 
@@ -258,7 +329,7 @@ class Log:
 
 log = Log
 
-nograph = "nograph"
+nograph = "--nograph"
 
 def destinatarios(dest):
     destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
@@ -409,7 +480,9 @@ def send_telegram(dest, itemType, get_graph, key):
                 for contato in Contatos:
                     try:
                         Id = f"{contato.id}"
-                        nome = f"{contato.first_name} {contato.last_name}"
+                        nome = f"{contato.first_name} "
+                        if contato.last_name:
+                            nome += "{}".format(contato.last_name)
                     except:
                         print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
                         exit()
@@ -433,9 +506,14 @@ def send_telegram(dest, itemType, get_graph, key):
                     Dialogos = app.iter_dialogs()
                     for dialogo in Dialogos:
                         Id = f"{dialogo.chat.id}"
-                        nome = "{}".format(dialogo.chat.title or f"{dialogo.chat.first_name} {dialogo.chat.last_name}")
-                        username = dialogo.chat.username
+                        if dialogo.chat.title:
+                            nome = "{} ".format(dialogo.chat.title)
+                        else:
+                            nome = f"{dialogo.chat.first_name} "
+                            if dialogo.chat.last_name:
+                                nome += "{}".format(dialogo.chat.last_name)
 
+                        username = dialogo.chat.username
                         if username:
                             if username in dest or dest in Id or dest in nome.lower():
                                 dest = nome
@@ -453,7 +531,14 @@ def send_telegram(dest, itemType, get_graph, key):
                         dest = int(dest)
                     chat = app.get_chat(dest)
                     Id = "{}".format(chat.id)
-                    dest = "{}".format(chat.title or f"{chat.first_name} {chat.last_name}")
+
+                    if chat.title:
+                        dest = f"{chat.title}"
+                    else:
+                        dest = f"{chat.first_name} "
+                        if chat.last_name:
+                            dest += "{}".format(chat.last_name)
+
                 except Exception as msg:
                     print(msg.args[0])
                     log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
@@ -748,7 +833,9 @@ def get_info(name=None):
         infos += ""
         if name:
             for dialogo in dialogos:
-                Id = "Id: {}".format(dialogo.chat.id)
+                tipos = {"group": "Grupo", "supergroup": "Super Grupo", "bot": "BOT", "channel": "Canal", "private": "Usuário"}
+                tipo = f"Tipo: {tipos[dialogo.chat.type]}"
+                Id = f"Id: {dialogo.chat.id}"
                 if dialogo.chat.title or '777000' in Id:
                     nome = "Nome: {}".format(dialogo.chat.title or dialogo.chat.first_name)
                 else:
@@ -763,7 +850,7 @@ def get_info(name=None):
                     if "" == infos:
                         infos += "\nChats encontrados (ContA):\n\n"
 
-                    infos += "{}\n{}\n\n".format(Id, nome)
+                    infos += f"{tipo}\n{Id}\n{nome}\n\n"
                     ContA += 1
 
             if not infos:
@@ -791,46 +878,45 @@ def create_file():
                 if not JsonX[obj]:
                     JsonX[obj] = keepass()
                 break
-        JsonXR = json.dumps(JsonX)
-        os.popen(f"cat >> {fileX} << EOF\n{JsonXR}\nEOF")
+        write_json(fileX, JsonX)
 
     else:
-        JsonX = json.loads(os.popen(f"cat {fileX}").read())
+        JsonX = load_json(fileX)
 
     return JsonX
 
-def get_cripto():
+def get_cripto(flag=False):
     JsonX = create_file()
     # import ipdb; ipdb.set_trace()
+    # text = ""
     textK0 = []
-    text = ""
     for obj in JsonX:
         if "code" == obj:
-            if not JsonX[obj]:
+            if codeKey:
+                JsonX[obj] = codeKey
+            else:
                 JsonX[obj] = keepass()
             continue
         textK = ""
         for k in JsonX[obj]:
-            if not JsonX[obj][k]:
+            if JsonX[obj][k] == flag:
                 if not textK:
                     textK += f"{obj}: "
                 textK += f"{k}, "
                 textK0 += [k]
 
-        if textK:
-            text += f"{textK[:-2]}\n"
+        # if textK:
+        #     text += f"{textK[:-2]}\n"
+    write_json(fileX, JsonX)
 
-    JsonX = json.dumps(JsonX)
-    os.popen(f"cat > {fileX} << EOF\n{JsonX}\nEOF")
-    return text, textK0, JsonX
+    return textK0, JsonX
 
 def create_cripto():
-    texto, textoKey, JsonX = get_cripto()
-    JsonX = json.loads(JsonX)
+    textoKey, JsonX = get_cripto()
     key = JsonX['code']
-    if texto:
+    if textoKey:
         config = path.format('configScripts.properties')
-        contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
+        contArq = os.popen("cat {}".format(config)).read()
         textoKey = ", ".join(textoKey)
         print(f"\nOs seguintes campos podem ser criptografados:\n{textoKey}")
         criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
@@ -848,91 +934,24 @@ def create_cripto():
 
         contArq = contArq.rstrip()
         os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
+        write_json(fileX, JsonX)
 
-        Json = json.dumps(JsonX)
-        arquivo = open("{0}".format(fileX), "w")
-        arquivo.writelines(Json)
-        arquivo.close()
     else:
         print(f"\nNão há campos para criptografar.\n")
         exit()
 
-def update_reEncrypt():
-    JsonXR = json.loads(fileC)
-    JsonX = json.loads(os.popen("cat {}".format(fileX)).read())
-    config = path.format('configScripts.properties')
-    contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
-    tupla = []
-    textoKeyR = []
-    for obj in JsonXR:
-        if "code" == obj:
-            if not JsonXR[obj]:
-                JsonXR[obj] = keepass()
-            continue
-        textK = ""
-        for k in JsonXR[obj]:
-            if not JsonXR[obj][k]:
-                if not textK:
-                    textK += f"{obj}: "
-                textK += f"{k}, "
-                textoKeyR += [k]
-
-    textoKeyR = ", ".join(textoKeyR)
-    print(f"\nOs seguintes campos podem ser criptografados:\n{textoKeyR}")
-    criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
-    if [''] == criptoK:
+def update_crypto(tag):
+    pre = f"{'re' if 're' == tag else 'des'}"
+    textoKey, JsonX = get_cripto(flag=True)
+    if not textoKey:
+        print(f"\nNão há campos para {pre}criptografar.\n")
         exit()
-    for crip in criptoK:
-        valor = input(f"\nAgora informe um valor para o campo '{crip}': ")
-        # import ipdb; ipdb.set_trace()
-        tupla.append((crip, valor))
-        for js in JsonX:
-            if "code" != js:
-                for k in JsonX[js]:
-                    if not JsonX[js][k]:
-                        if crip == k:
-                            JsonX[js][k] = True
 
-    # import ipdb; ipdb.set_trace()
-    key = JsonX['code']
-    for t in tupla:
-        k, v = t
-        valueC = encrypt(key, v)
-        valueR = re.search(f"\n{k} ?= ?(.*)\n", contArq).group(1)
-        contArq = re.sub(f"{valueR}", f"{valueC}", contArq)
-
-    contArq = contArq.rstrip()
-    os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
-
-    Json = json.dumps(JsonX)
-    arquivo = open("{0}".format(fileX), "w")
-    arquivo.writelines(Json)
-    arquivo.close()
-
-def update_decrypt():
-    JsonX = json.loads(os.popen("cat {}".format(fileX)).read())
     key = JsonX['code']
     config = path.format('configScripts.properties')
     contArq = os.popen("cat {}".format(config)).read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
-    textoKeyR = []
-    for obj in JsonX:
-        if "code" == obj:
-            if not JsonX[obj]:
-                JsonX[obj] = keepass()
-            continue
-        textK = ""
-        for k in JsonX[obj]:
-            if JsonX[obj][k]:
-                if not textK:
-                    textK += f"{obj}: "
-                textK += f"{k}, "
-                textoKeyR += [k]
-
-    textoKeyR = ", ".join(textoKeyR)
-    if not textoKeyR:
-        print(f"\nNão há campos para descriptografar.\n{textoKeyR}")
-        exit()
-    print(f"\nOs seguintes campos podem ser descriptografados:\n{textoKeyR}")
+    textoKey = ", ".join(textoKey)
+    print(f"\nOs seguintes campos podem ser {pre}criptografados:\n{textoKey}")
     criptoK = [str(objs).strip().rstrip() for objs in input("\ninforme quais deseja: ").split(",")]
     if [''] == criptoK:
         exit()
@@ -942,17 +961,20 @@ def update_decrypt():
                 for k in JsonX[js]:
                     if crip == k:
                         valueR = re.search(f"\n{crip} ?= ?(.*)\n", contArq).group(1)
-                        valueC = decrypt(key, valueR)
+                        if 'de' == tag:
+                            valor = valueR
+                            valueC = decrypt(key, valor)
+                            JsonX[js][k] = False
+                        else:
+                            valor = input(f"\nAgora informe um valor para o campo '{crip}': ")
+                            valueC = encrypt(key, valor)
+
                         contArq = contArq.replace(f"{valueR}", f"{valueC}")
-                        JsonX[js][k] = False
+
 
     contArq = contArq.rstrip()
     os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
-
-    Json = json.dumps(JsonX)
-    arquivo = open("{0}".format(fileX), "w")
-    arquivo.writelines(Json)
-    arquivo.close()
+    write_json(fileX, JsonX)
 
 def main2():
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
@@ -980,8 +1002,9 @@ def main2():
         else:
             get_graph = getgraph()
 
-        emails = []
+        inicio = time.time()
 
+        emails = []
         for x in destino:
             if re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
                 emails.append(x)
@@ -996,6 +1019,10 @@ def main2():
         if [] != emails:
             send_mail(emails, item_type, get_graph, codeKey)
 
+        fim = time.time()
+        total = fim - inicio
+        print("Tempo de execução: {:.2f}{}\n".format(total if total > 1 else 1000*total, 's' if total > 1 else 'ms'))
+
     except Exception as msg:
         print(msg)
         log.writelog(''.format(msg), arqLog, "WARNING")
@@ -1006,12 +1033,12 @@ def main():
     codeKey = JSON['code']
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--infoAll', action="store_true", help="Consult all information")
-    parser.add_argument('--encrypt', action="store_true", help="Encrypt information")
-    parser.add_argument('--decrypt', action="store_true", help="Decrypt information")
-    parser.add_argument('--reEncrypt', action="store_true", help="Re-encrypt information")
-    parser.add_argument('--info', action="store", dest="contact", help="Consult specific user/chat information")
-    parser.add_argument('--send', action="store", dest="destiny", help="Send test")
+    parser.add_argument('-a', '--infoAll', action="store_true", help="Consult all information")
+    parser.add_argument('-e', '--encrypt', action="store_true", help="Encrypt information")
+    parser.add_argument('-d', '--decrypt', action="store_true", help="Decrypt information")
+    parser.add_argument('-r', '--reEncrypt', action="store_true", help="Re-encrypt information")
+    parser.add_argument('-i', '--info', action="store", dest="contact", help="Consult specific user/chat information")
+    parser.add_argument('-s', '--send', action="store", dest="destiny", help="Send test")
     try:
         args = parser.parse_args()
     except:
@@ -1023,11 +1050,11 @@ def main():
         exit()
 
     elif args.reEncrypt:
-        update_reEncrypt()
+        update_crypto('re')
         exit()
 
     elif args.decrypt:
-        update_decrypt()
+        update_crypto('de')
         exit()
 
     elif args.destiny:

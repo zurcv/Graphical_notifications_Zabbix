@@ -158,7 +158,11 @@ Vamos precisar do <i><b>api_id</b></i> e <i><b>api_hash</b></i> no próximo pass
 Para iniciarmos, <a href="https://my.telegram.org/auth?to=apps" class="wikilink2" title="API Telegram" rel="nofollow"><b>CLIQUE AQUI</b></a> e 
 faça o login usando sua conta para criar a <b>chave API do Telegram</b>:
 
-Vamos precisar do <i><b>api_id</b></i> e <i><b>api_hash</b></i> no próximo passo
+Após o login aparecerá esta tela, faça o preenchimento da forma que preferir e clique em <b>"Create application"</b>, após isso aparecerá os campos que precisamos, são eles:
+o <i><b>api_id</b></i> e <i><b>api_hash</b></i>.<br><br>
+
+<blockquote> <p>Criando 'Client App'</p> </blockquote>
+<img src="https://lh3.googleusercontent.com/pw/ACtC-3dGoYhba_PHMhWr7FtUr71WylDgNox7beRdGlyJ082IicG5Xba3fIxWWk6dFeI32eTNW17CJJYz_VZIkCFLThY0XTnoHC7nYEZbSv815FOMkYSklXQpvldiOSq2C6RTiYjKybgZ8XU5yNbMXNTUfKcfVg=w984-h722-no?authuser=0"/><br><br>
 
 # Edite os parâmetros:
 
@@ -205,36 +209,36 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 <blockquote>[PathSectionTelegram]</blockquote>
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“api.id” = 12345678</font></font></li>
+“api.id” = 1234567</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“api.hash” = 12asdc64vfda19df165asdvf984dbf</font></font></li>
+“api.hash” = 12asdc64vfda19df165asdvf984dbf45</font></font></li>
 </ul>
 
 <blockquote>[PathSectionWhatsApp]</blockquote>
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“line” = 5522988776655</font></font></li>
+“line” = 5511950287353</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“acessKey” = 12asdc64vfda19df165asdvf984dbf</font></font></li>
+“acessKey” = XGja6Sgtz0F01rbWNDTc</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“port” = 12345</font></font></li>
+“port” = 13008</font></font></li>
 </ul>
 
 # Consultando Configuração
 
 <b>OBS:</b><br>
-<b>1 – </b> Ao executar o comando abaixo, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
+<b>1 - </b> Caso esteja usando conta invés de bot, terá a vantagem de usar este módulo de consulta, 
+se estiver usando bot, este comando só servirá para finalizarmos a vinculação do remetente.
+
+<b>2 – </b> Ao executar o comando abaixo, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
 se optar por usar uma conta, use a seguinte estrutura de telefone 
 <code>5522988776655</code> (prefixo para o Brasil, DDD e número), 
 depois que der “Enter”, receberá um código por SMS e/ou no aplicativo 
 <i>(no desktop, no celular ou na versão web, basta estar logado)</i>, 
 adicione o código e estará pronto.<br>
-
-<b>2 - </b> Caso esteja usando conta invés de bot, terá a vantagem de usar este módulo de consulta, 
-se estiver usando bot, este comando só servirá para finalizarmos a vinculação do remetente.
 
 <!--
 <b>DESCONSIDERE ESTE PASSO E VÁ DIRETO AO <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>COMANDO PARA TESTE</u></a> !</b> <br>

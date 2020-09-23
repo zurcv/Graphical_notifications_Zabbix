@@ -188,9 +188,11 @@ class Log:
 
 log = Log
 
-nograph = "nograph"
+nograph = "--nograph"
 
-if nograph not in sys.argv:
+argvs = " || ".join(sys.argv)
+
+if nograph not in argvs:
     try:
         itemname, eventid, itemid, color, period, body = sys.argv[3].split('#', 5)
         period = int(period)
@@ -208,7 +210,7 @@ if nograph not in sys.argv:
 else:
     body = "\n{0}".format(sys.argv[3])
 
-body = re.sub(r'(\d{4})\.(\d{2})\.(\d{2})', r'\3/\2/\1', body)
+body = re.sub(r'(\d{4})\.(\d{2})\.(\d{2})', r'\3/\2/\1', body).replace("--nograph", "").rstrip().strip()
 
 def destinatarios(dest):
     destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
@@ -309,7 +311,7 @@ def send_mail(dest, itemType, get_graph, key):
             exit()
 
         if re.search("(sim|s|yes|y)", str(Ack).lower()):
-            if nograph not in sys.argv:
+            if nograph not in argvs:
                 ack(dests, "Email enviado com sucesso ({0})")
 
         # print("Email sent successfully | Email enviado com sucesso ({0})".format(dests))
@@ -369,7 +371,10 @@ def send_telegram(dest, itemType, get_graph, key):
                 for contato in Contatos:
                     try:
                         Id = f"{contato.id}"
-                        nome = f"{contato.first_name} {contato.last_name}"
+                        nome = f"{contato.first_name} "
+                        if contato.last_name:
+                            nome += "{}".format(contato.last_name)
+
                     except:
                         # print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
                         log.writelog("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]), arqLog, "WARNING")
@@ -394,9 +399,14 @@ def send_telegram(dest, itemType, get_graph, key):
                     Dialogos = app.iter_dialogs()
                     for dialogo in Dialogos:
                         Id = f"{dialogo.chat.id}"
-                        nome = "{}".format(dialogo.chat.title or f"{dialogo.chat.first_name} {dialogo.chat.last_name}")
-                        username = dialogo.chat.username
+                        if dialogo.chat.title:
+                            nome = "{} ".format(dialogo.chat.title)
+                        else:
+                            nome = f"{dialogo.chat.first_name} "
+                            if dialogo.chat.last_name:
+                                nome += "{}".format(dialogo.chat.last_name)
 
+                        username = dialogo.chat.username
                         if username:
                             if username in dest or dest in Id or dest in nome.lower():
                                 dest = nome
@@ -414,7 +424,14 @@ def send_telegram(dest, itemType, get_graph, key):
                         dest = int(dest)
                     chat = app.get_chat(dest)
                     Id = "{}".format(chat.id)
-                    dest = "{}".format(chat.title or f"{chat.first_name} {chat.last_name}")
+
+                    if chat.title:
+                        dest = f"{chat.title}"
+                    else:
+                        dest = f"{chat.first_name} "
+                        if chat.last_name:
+                            dest += "{}".format(chat.last_name)
+
                 except Exception as msg:
                     # print(msg.args[0])
                     log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
@@ -459,7 +476,7 @@ def send_telegram(dest, itemType, get_graph, key):
                 exit()
 
     if re.search("(sim|s|yes|y)", str(Ack).lower()):
-        if nograph not in sys.argv:
+        if nograph not in argvs:
             ack(dest, "Telegram enviado com sucesso ({0})")
 
 def send_whatsapp(destiny, itemType, get_graph, key):
@@ -546,7 +563,7 @@ def send_whatsapp(destiny, itemType, get_graph, key):
             exit()
 
     if re.search("(sim|s|yes|y)", str(Ack).lower()):
-        if nograph not in sys.argv:
+        if nograph not in argvs:
             ack(destiny, "WhatsApp enviado com sucesso ({0})")
 
 def token():
@@ -717,8 +734,8 @@ def ack(dest, message):
             data=json.dumps(Json))
 
 def get_cripto():
-    JsonX = json.loads(os.popen(f"cat {fileX}").read())
-    return JsonX
+    with open(fileX, 'r') as f:
+        return json.load(f)
 
 def decrypt(key, source, decode=True):
     from Crypto.Cipher import AES
@@ -736,7 +753,7 @@ def decrypt(key, source, decode=True):
 
 def main():
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
-    if nograph not in sys.argv:
+    if nograph not in argvs:
         item_type = getItemType(itemid)
         get_graph = getgraph(itemname, period)
     else:
