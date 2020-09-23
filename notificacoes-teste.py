@@ -207,12 +207,11 @@ else:
     fileOut = os.popen(f"cat {arqConfig}").read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
     contArq = ""
     for lineIn in fileIn:
-        lineIn = lineIn
-        linhaIn = re.search(f"(.*) ?= ?(.*)", lineIn)
+        linhaIn = re.search(f"(^[a-z.]+) ?= ?(.*)", lineIn)
         if linhaIn:
             keyIn = linhaIn.group(1).rstrip()
             if keyIn in fileOut:
-                valueOut = re.search(f"({keyIn}) ?= ?(.*)", fileOut).group()
+                valueOut = re.search(f"\n({keyIn}) ?= ?(.*)", fileOut).group().strip()
                 if " = " not in valueOut:
                     valueOut = valueOut.replace('=', ' = ')
                 contArq += f"{valueOut}\n"
