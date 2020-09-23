@@ -214,7 +214,9 @@ else:
             if keyIn in fileOut:
                 valueOut = re.search(f"({keyIn}) ?= ?(.*)", fileOut).group()
                 if " = " not in valueOut:
-                    contArq += f"{valueOut.replace('=',' = ')}\n"
+                    valueOut = valueOut.replace('=', ' = ')
+                contArq += f"{valueOut}\n"
+
             else:
                 contArq += f"{lineIn}\n"
             continue
