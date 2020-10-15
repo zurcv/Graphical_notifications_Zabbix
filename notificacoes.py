@@ -451,11 +451,11 @@ def send_telegram(Ldest, itemType, get_graph, key):
 
                 try:
                     app.send_photo(Id, graph, caption=sendMsg, parse_mode="html")
-                    # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
-                    log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
+                    # print('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest))
+                    log.writelog('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
                 except Exception as e:
-                    # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
-                    log.writelog('{0} >> Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
+                    # print('Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram\n%s' % e)
+                    log.writelog('{0} >> Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
                     logout_api()
                     exit()
 
@@ -537,11 +537,15 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
                 result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
                 if result.status_code != 200:
-                    log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+                    error = json.loads(result.content.decode("utf-8"))['errors'][0]['message']
+                    # error = result.content.decode("utf-8")
+                    log.writelog('{0}'.format(error), arqLog, "ERROR")
+                    # print('WhatsApp FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo WhatsApp\n%s' % error)
                 else:
-                    # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
-                    log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                    # print('WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(destiny))
+                    log.writelog('WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
                     log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+
             except Exception as e:
                 # print(e)
                 log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
@@ -554,11 +558,16 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
                 result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
                 if result.status_code != 200:
-                    log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+                    error = json.loads(result.content.decode("utf-8"))['errors'][0]['message']
+                    # error = result.content.decode("utf-8")
+                    log.writelog('{0}'.format(error), arqLog, "ERROR")
+                    # print('WhatsApp FAIL at sending message | FALHA ao enviar a mensagem pelo WhatsApp\n%s' % error)
+
                 else:
                     # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
                     log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
                     log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+
             except Exception as e:
                 # print(e)
                 log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
