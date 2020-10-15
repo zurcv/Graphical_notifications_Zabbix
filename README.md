@@ -145,7 +145,7 @@ Para contratar acesse o site <a href="https://www.netizap.app/" class="wikilink2
 
 <!--
 O desenvolverdor liberou o acesso ao envio por alguns dias para realização de testes, 
-então nenhuma ação será necessária agora, basta seguir com o restante da configuração. 
+então nenhuma ação será necessária agora, basta seguir com o restante da configuração. acess.key
 
 <u><b>Depois será necessário a contratação do serviço, assim que terminar o período de teste 
 colocarei todas as informações necessárias aqui neste bloco de como entrar em contato e contratar.</b></u>
@@ -219,7 +219,7 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 “line” = 5511950287353</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
-“acessKey” = XGja6Sgtz0F01rbWNDTc</font></font></li>
+“acess.key” = XGja6Sgtz0F01rbWNDTc</font></font></li>
 
 <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="checked" disabled="disabled"><font><font class=""> 
 “port” = 13008</font></font></li>
