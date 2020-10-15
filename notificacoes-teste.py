@@ -39,7 +39,7 @@ while tag:
         tag = False
 
     except ModuleNotFoundError:
-        print("Execute o comando:\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
+        print("Execute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
         exit()
     except Exception as e:
         print(f"{e}")
@@ -195,7 +195,7 @@ api.hash = 12asdc64vfda19df165asdvf984dbf45
 salutation.whatsapp = yes
 cod.ddi = 55
 line = 5511950287353
-acessKey = XGja6Sgtz0F01rbWNDTc
+acess.key = XGja6Sgtz0F01rbWNDTc
 port = 13008"""
 
 if not os.path.exists(arqConfig):
@@ -204,17 +204,21 @@ if not os.path.exists(arqConfig):
 
 else:
     fileIn = f"{configDefault}".split("\n")
-    fileOut = os.popen(f"cat {arqConfig}").read().replace("email_from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.")
+    fileOut = os.popen(f"cat {arqConfig}").read().replace("email_from", "mail.from").replace("email.from", "mail.from").replace("smtp_server", "smtp.server").replace("mail_", "mail.").replace("acessKey", "acess.key")
     contArq = ""
     for lineIn in fileIn:
         linhaIn = re.search(f"(^[a-z.]+) ?= ?(.*)", lineIn)
         if linhaIn:
             keyIn = linhaIn.group(1).rstrip()
-            if keyIn in fileOut:
-                valueOut = re.search(f"\n({keyIn}) ?= ?(.*)", fileOut).group().strip()
-                if " = " not in valueOut:
-                    valueOut = valueOut.replace('=', ' = ')
-                contArq += f"{valueOut}\n"
+            valueOut = re.search(f"\n({keyIn}) ?= ?(.*)", fileOut)
+            if valueOut:
+                keyOut = valueOut.group(1).split("=")[0].strip().rstrip()
+                if keyIn == keyOut:
+                    # valueOut = re.search(f"\n({keyIn}) ?= ?(.*)", fileOut).group().strip()
+                    valueOut = valueOut.group().strip()
+                    if " = " not in valueOut:
+                        valueOut = valueOut.replace('=', ' = ')
+                    contArq += f"{valueOut}\n"
 
             else:
                 contArq += f"{lineIn}\n"
@@ -585,7 +589,7 @@ def send_telegram(dest, itemType, get_graph, key):
 
 def send_whatsapp(destiny, itemType, get_graph, key):
     line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
-    acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acessKey')
+    acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acess.key')
     port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
 
     try:
@@ -634,18 +638,17 @@ def send_whatsapp(destiny, itemType, get_graph, key):
         Graph = quote(base64.b64encode(get_graph.content))#.decode("ISO-8859-1"))
         try:
             headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            # payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(AcessKey)
-            # url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=urllib.parse.quote_plus(message))
             payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(key=acessKey, text=message, stream=Graph)
             url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(port=port, line=line, destiny=destiny)
             result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
             if result.status_code != 200:
-                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+                log.writelog('{0}'.format(json.loads(result.content.decode("utf-8"))['errors'][0]['message']), arqLog, "ERROR")
+                # log.writelog('{0}'.format(result.content.decode("utf-8")), arqLog, "ERROR")
             else:
                 print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
                 log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
-                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+                log.writelog('{0}'.format(json.loads(result.content.decode("utf-8"))["result"]), arqLog, "INFO")
         except Exception as e:
             print(e)
             log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
@@ -977,22 +980,69 @@ def update_crypto(tag):
     os.popen(f"cat > {config} << EOF\n{contArq} \nEOF")
     write_json(fileX, JsonX)
 
-def main2():
-    codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
-    global subject, body, itemid, itemname, period, color
+def multi_input():
+    try:
+        while True:
+            data = map(str, input("").split("\n"))
+            if not data:
+                break
+            yield data
+    except KeyboardInterrupt:
+        return
+
+def input_complete(input_list):
+    if "--test" in input_list[-1]:
+        return True
+    else:
+        return False
+
+def get_input(prompt1, prompt2):
+    L = list()
+    prompt = prompt1
+    while True:
+        L.append(input(prompt))
+        if input_complete(L):
+            return "\n".join(L).replace("--test", "").strip().rstrip()
+        prompt = prompt2
+
+def send(msg=False):
+    global subject, body, itemid, itemname, period, color, item_type
     try:
         try:
             itemid, itemname, item_type = getItemType()
         except:
             print('User has no read permission on environment | Usuário sem permissão de leitura no ambiente')
-            log.writelog('User has no read permission on environment | Usuário sem permissão de leitura no ambiente', arqLog, "WARNING")
+            log.writelog('User has no read permission on environment | Usuário sem permissão de leitura no ambiente',
+                         arqLog, "WARNING")
             logout_api()
             exit()
 
-        color = '00C800'
-        period = 3600
-        subject = '<b>testando o envio com o item</b>:'
-        body = '{0}'.format(itemname)
+        if msg:
+            subject = input("Digite o 'Assunto': ")
+            message = get_input("\nDigite a 'Mensagem' terminando com '--test': ", " ")
+            # print(repr(s))
+            itemname, eventid, itemid, color, period, body = message.split('#', 5)
+
+        else:
+            color = '00C800'
+            period = 3600
+            subject = '<b>testando o envio com o item</b>:'
+            body = '{0}'.format(itemname)
+
+    except Exception as msg:
+        print(msg)
+        log.writelog(''.format(msg), arqLog, "WARNING")
+
+    return subject, body, itemid, itemname, period, color, item_type
+
+def main2(test=None):
+    if test:
+        subject, body, itemid, itemname, period, color, item_type = send(msg=True)
+    else:
+        subject, body, itemid, itemname, period, color, item_type = send()
+
+    codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
+    try:
 
         dest = sys.argv[2]
         destino = destinatarios(dest)
@@ -1040,6 +1090,8 @@ def main():
     parser.add_argument('-r', '--reEncrypt', action="store_true", help="Re-encrypt information")
     parser.add_argument('-i', '--info', action="store", dest="contact", help="Consult specific user/chat information")
     parser.add_argument('-s', '--send', action="store", dest="destiny", help="Send test")
+    parser.add_argument('-t', '--test', action="store", dest="argvs_Environment", help="Send test environment")
+
     try:
         args = parser.parse_args()
     except:
@@ -1061,6 +1113,12 @@ def main():
     elif args.destiny:
         auth = token()
         main2()
+        logout_api()
+        exit()
+
+    elif args.argvs_Environment:
+        auth = token()
+        main2(test=True)
         logout_api()
         exit()
 
