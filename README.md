@@ -130,27 +130,25 @@ Ao final da execução do script, ele indicará qual pasta você acessará.
 
 # Criando Chave API WhatsApp:
 
+ <!--
 <p><s>Para usar este envio é necessário contratar o serviço, em conversa com o responsável consegui um desconto, 
 basta informar o cupom <code><b>zabbix20S</b></code> e ganhe 50% de desconto. </s></p>
  
- <!--
 Houve um problema com o site do desenvolvedor e por enquanto ele estará atentendo via telefone (WhatsApp ou Telegram) 
 <i>"Thiago Pedro" 
 (<a href="https://t.me/Thiago_Pedro" class="wikilink2" title="Conversar com ele" rel="nofollow">@Thiago_Pedro</a></i> - 5527998022075)
 -->
 
+<p>Para usar este envio é necessário contratar o serviço, em conversa com o responsável consegui um desconto de 50%, 
+basta informar o cupom <code><b>zabbix20S</b></code>. </p>
+Para contratar acesse o site <a href="https://www.netizap.app/" class="wikilink2" title="API WhatsApp" rel="nofollow"><b>https://www.netizap.app/</b></a>
+
+<!--
 O desenvolverdor liberou o acesso ao envio por alguns dias para realização de testes, 
 então nenhuma ação será necessária agora, basta seguir com o restante da configuração. 
 
 <u><b>Depois será necessário a contratação do serviço, assim que terminar o período de teste 
 colocarei todas as informações necessárias aqui neste bloco de como entrar em contato e contratar.</b></u>
-
-
-<!--
-Para iniciarmos, <a href="https://my.telegram.org/auth?to=apps" class="wikilink2" title="API Telegram" rel="nofollow"><b>CLIQUE AQUI</b></a> e 
-faça o login usando sua conta para criar a <b>chave API do Telegram</b>:
-
-Vamos precisar do <i><b>api_id</b></i> e <i><b>api_hash</b></i> no próximo passo
 -->
 
 # Criando Chave API Telegram:
