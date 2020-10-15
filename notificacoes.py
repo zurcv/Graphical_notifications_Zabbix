@@ -324,7 +324,7 @@ def send_mail(dest, itemType, get_graph, key):
         smtp.quit()
         exit()
 
-def send_telegram(dest, itemType, get_graph, key):
+def send_telegram(Ldest, itemType, get_graph, key):
     # Telegram settings | Configuracao do Telegram #########################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
@@ -339,10 +339,8 @@ def send_telegram(dest, itemType, get_graph, key):
     except:
         api_hash = api_hash0
 
-
     app = Client("SendGraph", api_id=api_id, api_hash=api_hash)
 
-    dest = dest.lower()
     msg = body.replace("\\n", "")
     saudacao = salutation
     Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'salutation.telegram')
@@ -353,62 +351,39 @@ def send_telegram(dest, itemType, get_graph, key):
     else:
         saudacao = ""
 
-    if re.search("user#|chat#|\'|\"", dest):
-        if "#" in dest:
-            dest = dest.split("#")[1]
-
-        elif dest.startswith("\"") or dest.startswith("\'"):
-            dest = dest.replace("\"", "").replace("\'", "")
-
-    elif dest.startswith("@"):
-        dest = dest[1:]
 
     with app:
-        flag = True
-        while flag:
-            try:
-                Contatos = app.get_contacts()
-                for contato in Contatos:
-                    try:
-                        Id = f"{contato.id}"
-                        nome = f"{contato.first_name} "
-                        if contato.last_name:
-                            nome += "{}".format(contato.last_name)
+        for dest in Ldest:
+            dest = dest.lower()
+            if re.search("user#|chat#|\'|\"", dest):
+                if "#" in dest:
+                    dest = dest.split("#")[1]
 
-                    except:
-                        # print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
-                        log.writelog("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]), arqLog, "WARNING")
-                        exit()
+                elif dest.startswith("\"") or dest.startswith("\'"):
+                    dest = dest.replace("\"", "").replace("\'", "")
 
-                    username = contato.username
-                    if username:
-                        if username.lower() in dest or dest in Id or dest in nome.lower():
-                            dest = nome
-                            flag = False
-                            break
-                    else:
-                        if dest in Id or dest in nome.lower():
-                            dest = nome
-                            flag = False
-                            break
-            except:
-                pass
+            elif dest.startswith("@"):
+                dest = dest[1:]
 
-            try:
-                if flag:
-                    Dialogos = app.iter_dialogs()
-                    for dialogo in Dialogos:
-                        Id = f"{dialogo.chat.id}"
-                        if dialogo.chat.title:
-                            nome = "{} ".format(dialogo.chat.title)
-                        else:
-                            nome = f"{dialogo.chat.first_name} "
-                            if dialogo.chat.last_name:
-                                nome += "{}".format(dialogo.chat.last_name)
+            flag = True
+            while flag:
+                try:
+                    Contatos = app.get_contacts()
+                    for contato in Contatos:
+                        try:
+                            Id = f"{contato.id}"
+                            nome = f"{contato.first_name} "
+                            if contato.last_name:
+                                nome += "{}".format(contato.last_name)
 
-                        username = dialogo.chat.username
+                        except:
+                            # print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
+                            log.writelog("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]), arqLog, "WARNING")
+                            exit()
+
+                        username = contato.username
                         if username:
-                            if username in dest or dest in Id or dest in nome.lower():
+                            if username.lower() in dest or dest in Id or dest in nome.lower():
                                 dest = nome
                                 flag = False
                                 break
@@ -417,69 +392,95 @@ def send_telegram(dest, itemType, get_graph, key):
                                 dest = nome
                                 flag = False
                                 break
-            except:
-                flag = False
+                except:
+                    pass
+
                 try:
-                    if re.match("^([0-9-]+)$", dest):
-                        dest = int(dest)
-                    chat = app.get_chat(dest)
-                    Id = "{}".format(chat.id)
+                    if flag:
+                        Dialogos = app.iter_dialogs()
+                        for dialogo in Dialogos:
+                            Id = f"{dialogo.chat.id}"
+                            if dialogo.chat.title:
+                                nome = "{} ".format(dialogo.chat.title)
+                            else:
+                                nome = f"{dialogo.chat.first_name} "
+                                if dialogo.chat.last_name:
+                                    nome += "{}".format(dialogo.chat.last_name)
 
-                    if chat.title:
-                        dest = f"{chat.title}"
-                    else:
-                        dest = f"{chat.first_name} "
-                        if chat.last_name:
-                            dest += "{}".format(chat.last_name)
+                            username = dialogo.chat.username
+                            if username:
+                                if username in dest or dest in Id or dest in nome.lower():
+                                    dest = nome
+                                    flag = False
+                                    break
+                            else:
+                                if dest in Id or dest in nome.lower():
+                                    dest = nome
+                                    flag = False
+                                    break
+                except:
+                    flag = False
+                    try:
+                        if re.match("^([0-9-]+)$", dest):
+                            dest = int(dest)
+                        chat = app.get_chat(dest)
+                        Id = "{}".format(chat.id)
 
-                except Exception as msg:
-                    # print(msg.args[0])
-                    log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
+                        if chat.title:
+                            dest = f"{chat.title}"
+                        else:
+                            dest = f"{chat.first_name} "
+                            if chat.last_name:
+                                dest += "{}".format(chat.last_name)
+
+                    except Exception as msg:
+                        # print(msg.args[0])
+                        log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
+                        exit()
+
+            sendMsg = """{}{} {}""".format(saudacao.format(dest), sys.argv[2], msg)
+            if re.search("(0|3)", itemType):
+                try:
+                    graph = '{0}/{1}.png'.format(graph_path, itemid)
+                    with open(graph, 'wb') as png:
+                        png.write(get_graph.content)
+                except BaseException as e:
+                    log.writelog('{1} >> An error occurred at save graph file in {0} | Ocorreu um erro ao salvar o grafico no diretório {0}'.format(graph_path, str(e)), arqLog, "WARNING")
+                    logout_api()
                     exit()
 
-        sendMsg = """{}{} {}""".format(saudacao.format(dest), sys.argv[2], msg)
-        if re.search("(0|3)", itemType):
-            try:
-                graph = '{0}/{1}.png'.format(graph_path, itemid)
-                with open(graph, 'wb') as png:
-                    png.write(get_graph.content)
-            except BaseException as e:
-                log.writelog('{1} >> An error occurred at save graph file in {0} | Ocorreu um erro ao salvar o grafico no diretório {0}'.format(graph_path, str(e)), arqLog, "WARNING")
-                logout_api()
-                exit()
+                try:
+                    app.send_photo(Id, graph, caption=sendMsg, parse_mode="html")
+                    # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
+                    log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
+                except Exception as e:
+                    # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
+                    log.writelog('{0} >> Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
+                    logout_api()
+                    exit()
 
-            try:
-                app.send_photo(Id, graph, caption=sendMsg, parse_mode="html")
-                # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
-                log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
-            except Exception as e:
-                # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
-                log.writelog('{0} >> Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
-                logout_api()
-                exit()
+                try:
+                    os.remove(graph)
+                except Exception as e:
+                    # print(e)
+                    log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
 
-            try:
-                os.remove(graph)
-            except Exception as e:
-                # print(e)
-                log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
-
-        else:
-            try:
-                app.send_message(Id, sendMsg, parse_mode="html")
-                # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
-                log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
-            except Exception as e:
-                # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
-                log.writelog('{0} >> Telegram FAIL at sending message | FALHA ao enviar a mensagem pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
-                logout_api()
-                exit()
+            else:
+                try:
+                    app.send_message(Id, sendMsg, parse_mode="html")
+                    # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
+                    log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
+                except Exception as e:
+                    # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
+                    log.writelog('{0} >> Telegram FAIL at sending message | FALHA ao enviar a mensagem pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
+                    logout_api()
+                    exit()
 
     if re.search("(sim|s|yes|y)", str(Ack).lower()):
         if nograph not in argvs:
             ack(dest, "Telegram enviado com sucesso ({0})")
 
-def send_whatsapp(destiny, itemType, get_graph, key):
+def send_whatsapp(Ldestiny, itemType, get_graph, key):
     line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
     acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acessKey')
     port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
@@ -526,41 +527,42 @@ def send_whatsapp(destiny, itemType, get_graph, key):
         message1 = message0
 
     message = quote(base64.b64encode(message1.encode("utf-8")))
-    if re.search("(0|3)", itemType):
-        Graph = quote(base64.b64encode(get_graph.content))
-        try:
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(key=acessKey, text=message, stream=Graph)
-            url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(port=port, line=line, destiny=destiny)
-            result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
+    for destiny in Ldestiny:
+        if re.search("(0|3)", itemType):
+            Graph = quote(base64.b64encode(get_graph.content))
+            try:
+                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+                payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(key=acessKey, text=message, stream=Graph)
+                url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(port=port, line=line, destiny=destiny)
+                result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
-            if result.status_code != 200:
-                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
-            else:
-                # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
-                log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
-                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
-        except Exception as e:
-            # print(e)
-            log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
-            exit()
-    else:
-        try:
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(acessKey)
-            url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=message)
-            result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
+                if result.status_code != 200:
+                    log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+                else:
+                    # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
+                    log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                    log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+            except Exception as e:
+                # print(e)
+                log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
+                exit()
+        else:
+            try:
+                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+                payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(acessKey)
+                url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=message)
+                result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
-            if result.status_code != 200:
-                log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
-            else:
-                # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
-                log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
-                log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
-        except Exception as e:
-            # print(e)
-            log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
-            exit()
+                if result.status_code != 200:
+                    log.writelog('{0}'.format(str(result.text)), arqLog, "WARNING")
+                else:
+                    # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
+                    log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                    log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
+            except Exception as e:
+                # print(e)
+                log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
+                exit()
 
     if re.search("(sim|s|yes|y)", str(Ack).lower()):
         if nograph not in argvs:
@@ -766,16 +768,25 @@ def main():
     codeKey = JSON['code']
 
     emails = []
+    telegrams = []
+    whatsapps = []
+
     for x in destino:
         if re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
             emails.append(x)
 
         elif re.match(f"^{codDDI}[0-9]+$", x):
-            send_whatsapp(x, item_type, get_graph, codeKey)
+            whatsapps.append(x)
 
         else:
             telegram = x.replace("_", " ")
-            send_telegram(telegram, item_type, get_graph, codeKey)
+            telegrams.append(telegram)
+
+    if [] != whatsapps:
+        send_whatsapp(whatsapps, item_type, get_graph, codeKey)
+
+    if [] != telegrams:
+        send_telegram(telegrams, item_type, get_graph, codeKey)
 
     if [] != emails:
         send_mail(emails, item_type, get_graph, codeKey)
