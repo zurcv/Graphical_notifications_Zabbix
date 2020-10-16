@@ -1079,7 +1079,7 @@ def main2(test=None):
 
         fim = time.time()
         total = fim - inicio
-        print("Tempo de execução: {:.2f}{}\n".format(total if total > 1 else 1000*total, 's' if total > 1 else 'ms'))
+        print("\nTempo de execução do script: {:.2f}{}\n".format(total if total > 1 else 1000*total, 's' if total > 1 else 'ms'))
 
     except Exception as msg:
         print(msg)
