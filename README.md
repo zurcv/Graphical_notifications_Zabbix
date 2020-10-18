@@ -170,7 +170,7 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 <b>1 – </b>O usuário que você declarar no campo <i>“user”</i> precisa ter permissão no mínimo de leitura no ambiente.<br>
 <b>2 – </b>Os campos contidos em [PathSectionEmail], [PathSectionTelegram] e [PathSectionWhatsApp], são opcionais, logo se for usar somente telegram, não é necessário preencher a parte do email, assim como de forma inversa.<br>
 <b>3 – </b>Se usar gmail, é preciso alterar o acesso à conta para aplicativos, se tiver "Verificação em duas etapas" ativado, é necessário criar uma "Senha de app", crie 
-<a href="https://support.google.com/accounts/answer/185833" class="wikilink2" title="App MAIS seguros" rel="nofollow">Aqui</a>.<br>Caso não tenha verificação em duas etapas, pode somente ativar "Acesso a app menos seguros", altere 
+<a href="https://support.google.com/accounts/answer/185833?hl=pt-BR" class="wikilink2" title="App MAIS seguros" rel="nofollow">Aqui</a>.<br>Caso não tenha verificação em duas etapas, pode somente ativar "Acesso a app menos seguros", altere 
 <a href="https://support.google.com/accounts/answer/6010255?hl=pt-BR" class="wikilink2" title="App menos seguros" rel="nofollow">Aqui</a>.<br>
 
 <blockquote>[PathSection]</blockquote>
