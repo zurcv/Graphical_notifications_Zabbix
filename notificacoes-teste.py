@@ -549,7 +549,7 @@ def send_telegram(dest, itemType, get_graph, key):
                     log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
                     exit()
 
-        sendMsg = """{}{} {}""".format(saudacao.format(dest), subject, body)
+        sendMsg = """{}{}\n{}""".format(saudacao.format(dest), subject, body)
         if re.search("(0|3)", itemType):
             try:
                 graph = '{0}/{1}.png'.format(graph_path, itemid)
