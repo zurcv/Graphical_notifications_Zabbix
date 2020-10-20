@@ -236,8 +236,8 @@ Mas somente para quem estiver <b>USANDO CONTA.</b>
 <pre>sudo -u zabbix ./notificacoes-teste.py --infoAll</pre>
 
 <b>2 – </b> Ao executar o comando acima, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
-se optar por <b>usar BOT</b>, cole o token, execute o comando e <br>
-<b>DESCONSIDERE OS PRÓXIMOS PASSOS, E VÁ DIRETO AO <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>COMANDO PARA TESTE</u></a> !</b> <br>
+se optar por <b>usar BOT</b>: cole o token, dê ENTER e
+<b>DESCONSIDERE OS PRÓXIMOS PASSOS, <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a> !</b> <br>
 
 
 <b>3 – </b> Se optar por <b>usar CONTA</b>, use a seguinte estrutura de telefone 
