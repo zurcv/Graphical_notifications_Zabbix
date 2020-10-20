@@ -232,7 +232,9 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 se estiver usando bot, este comando só servirá para finalizarmos a vinculação do remetente.
 
 <b>2 – </b> Ao executar o comando abaixo, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
-se optar por usar uma conta, use a seguinte estrutura de telefone 
+se optar por <b>usar BOT</b>, cole o token e execute o comando. 
+
+<b>3 – </b> Se optar por <b>usar CONTA</b>, use a seguinte estrutura de telefone 
 <code>5522988776655</code> (prefixo para o Brasil, DDD e número), 
 depois que der “Enter”, receberá um código por SMS e/ou no aplicativo 
 <i>(no desktop, no celular ou na versão web, basta estar logado)</i>, 
