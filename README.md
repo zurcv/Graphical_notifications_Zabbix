@@ -231,8 +231,14 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 <b>1 - </b> Caso esteja usando conta invés de bot, terá a vantagem de usar este módulo de consulta, 
 se estiver usando bot, este comando só servirá para finalizarmos a vinculação do remetente.
 
-<b>2 – </b> Ao executar o comando abaixo, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
-se optar por <b>usar BOT</b>, cole o token e execute o comando. 
+Este comando, também trará a quantidade e as informações de todos os seus chats, como: Tipo, Nome, ID...
+Mas somente para quem estiver <b>USANDO CONTA.</b>
+<pre>sudo -u zabbix ./notificacoes-teste.py --infoAll</pre>
+
+<b>2 – </b> Ao executar o comando acima, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
+se optar por <b>usar BOT</b>, cole o token, execute o comando e <br>
+<b>DESCONSIDERE OS PRÓXIMOS PASSOS, E VÁ DIRETO AO <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>COMANDO PARA TESTE</u></a> !</b> <br>
+
 
 <b>3 – </b> Se optar por <b>usar CONTA</b>, use a seguinte estrutura de telefone 
 <code>5522988776655</code> (prefixo para o Brasil, DDD e número), 
@@ -243,9 +249,6 @@ adicione o código e estará pronto.<br>
 <!--
 <b>DESCONSIDERE ESTE PASSO E VÁ DIRETO AO <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>COMANDO PARA TESTE</u></a> !</b> <br>
 -->
-
-Este comando, trará a quantidade e as informações de todos os seus chats, como nome e ID:
-<pre>sudo -u zabbix ./notificacoes-teste.py --infoAll</pre> <br>
 
 Para consultar a configuração de um usuário, grupo ou canal específico, execute o comando abaixo:
 
