@@ -777,7 +777,7 @@ def getgraph():
 
 def getItemType():
     try:
-        limit = 1000
+        limit = 5000
         itemid = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
             verify=False, data=json.dumps(
                    {
@@ -785,6 +785,7 @@ def getItemType():
                        "method": "item.get",
                        "params": {
                            "output": ["itemid", "name", "lastvalue", "value_type"],
+                           "filter": {"value_type": [0, 3]},
                            "limit": limit,
                            "sortfield": "itemid",
                            "sortorder": "DESC"
@@ -795,21 +796,43 @@ def getItemType():
             )
         )
 
+        if itemid.status_code != 200:
+            print(f"HTTPError {itemid.status_code}: {itemid.reason}")
+            log.writelog(f'HTTPError {itemid.status_code}: {itemid.reason}', arqLog, "WARNING")
+            logout_api()
+            exit()
+
+        resultItems = itemid.content
+        if not resultItems:
+            print('User has no read permission on environment | Usuário sem permissão de leitura no ambiente')
+            log.writelog('User has no read permission on environment | Usuário sem permissão de leitura no ambiente', arqLog, "WARNING")
+            logout_api()
+            exit()
+
         ValuesItemid = ()
-        ValueItemid = json.loads(itemid.content)
+        ValueItemid = json.loads(resultItems)
+
         if 'result' in ValueItemid:
             resultado = ValueItemid["result"]
             for i in range(0, len(resultado)):
-                if resultado[i]['lastvalue'] != '0' and re.search("(0|3)", resultado[i]['value_type']):
-                    if resultado[i]['lastvalue']:
-                        ValuesItemid += (resultado[i]['itemid'], resultado[i][u'name'], resultado[i]['value_type'])
-                        break
+                if resultado[i]['lastvalue'] != '0' and resultado[i]['lastvalue']:
+                    ValuesItemid += (resultado[i]['itemid'], resultado[i][u'name'], resultado[i]['value_type'])
+                    return ValuesItemid
 
-        return ValuesItemid
+        elif 'error' in ValueItemid:
+            print('Zabbix: %s' % ValueItemid["error"]["data"])
+            log.writelog('Zabbix: {0}'.format(ValueItemid["error"]["data"]), arqLog, "ERROR")
+            exit()
+
+        else:
+            print(ValueItemid)
+            log.writelog('{0}'.format(ValueItemid), arqLog, "ERROR")
+            exit()
 
     except Exception as msg:
         print(msg)
         log.writelog('{0}'.format(msg), arqLog, "ERROR")
+        exit()
 
 def get_info(name=None):
     # Telegram settings | Configuracao do Telegram #########################################################################
@@ -1015,14 +1038,7 @@ def get_input(prompt1, prompt2):
 def send(msg=False):
     global subject, body, itemid, itemname, period, color, item_type
     try:
-        try:
-            itemid, itemname, item_type = getItemType()
-        except:
-            print('User has no read permission on environment | Usuário sem permissão de leitura no ambiente')
-            log.writelog('User has no read permission on environment | Usuário sem permissão de leitura no ambiente',
-                         arqLog, "WARNING")
-            logout_api()
-            exit()
+        itemid, itemname, item_type = getItemType()
 
         if msg:
             subject = input("Digite o 'Assunto': ")
