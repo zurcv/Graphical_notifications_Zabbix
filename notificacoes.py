@@ -482,7 +482,7 @@ def send_telegram(Ldest, itemType, get_graph, key):
 
 def send_whatsapp(Ldestiny, itemType, get_graph, key):
     line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
-    acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acessKey')
+    acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acess.key')
     port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
 
     try:
