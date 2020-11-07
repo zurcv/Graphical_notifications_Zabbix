@@ -28,22 +28,20 @@ import os, sys, re, json, time, smtplib
 if len(sys.argv) == 1:
     sys.argv.append("-h")
 
-tag = True
-while tag:
-    try:
-        if float(sys.version.split(" ", 1)[0][:-2]) < pythonVersion:
-            print("\nSua versão do Python é {}.\nInstale/Atualize para o {} ou superior e refaça os passos do git".format(sys.version.split(" ", 1)[0], pythonVersion))
-            exit()
-        import requests, urllib3
-        from pyrogram import Client
-        tag = False
+try:
+    if float(sys.version.split(" ", 1)[0][:-2]) < pythonVersion:
+        print("\nA versão apontada para o '/usr/bin/python3' é \"{}\".\nInstale/Atualize/Aponte para o {} ou superior e reexecute o comando:\n\ncd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo sh notificacoes.sh\n".format(sys.version.split(" ", 1)[0], pythonVersion))
+        exit(1)
+    import requests, urllib3
+    from pyrogram import Client
 
-    except ModuleNotFoundError:
-        print("Execute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user")
-        exit()
-    except Exception as e:
-        print(f"{e}")
-        exit()
+except Exception as e:
+    if "No module" in e.args[0]:
+        print("Execute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user\n")
+
+    else:
+        print("{}".format(e.args[0]))
+    exit(2)
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -227,7 +225,7 @@ else:
         contArq += f"{lineIn}\n"
         continue
 
-    contArq = contArq.rstrip()
+    contArq = f"{contArq.rstrip()}\n"
 
 arquivo = open(f"{arqConfig}", "w")
 arquivo.writelines(contArq)
@@ -483,14 +481,10 @@ def send_telegram(dest, itemType, get_graph, key):
             try:
                 Contatos = app.get_contacts()
                 for contato in Contatos:
-                    try:
-                        Id = f"{contato.id}"
-                        nome = f"{contato.first_name} "
-                        if contato.last_name:
-                            nome += "{}".format(contato.last_name)
-                    except:
-                        print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
-                        exit()
+                    Id = f"{contato.id}"
+                    nome = f"{contato.first_name} "
+                    if contato.last_name:
+                        nome += "{}".format(contato.last_name)
 
                     username = contato.username
                     if username:

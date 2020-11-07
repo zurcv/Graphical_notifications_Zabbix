@@ -24,8 +24,9 @@
 
 import os, sys, re, json, time, smtplib
 
-if len(sys.argv) <= 2:
-    print("\nEste script é pra ser executado pelo ZABBIx e não manualmente.\nPara realização de teste use o script:\n\nsudo -u zabbix ./notificacoes-teste.py -h\n")
+if len(sys.argv) <= 2 or "--send" in sys.argv:
+    dest0 = "||".join(sys.argv).split("--send")[1].replace("||", "")
+    print(f"\nEste script é pra ser executado pelo ZABBIx e não manualmente.\nPara realização de teste use o script:\n\nsudo -u zabbix ./notificacoes-teste.py --send {dest0}\n")
     exit()
 
 import requests, urllib3
