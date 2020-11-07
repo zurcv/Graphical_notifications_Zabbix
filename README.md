@@ -124,9 +124,12 @@ O "How to" foi testado no ZABBIX 3.0 ao 5.0 no Debian 8 ao 10, Ubuntu 14 ao 20 e
 <blockquote> <p>Faça o download do script de instalação</p> </blockquote>
 <pre>cd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo sh notificacoes.sh</pre>
 
+ <!--
 <b>OBS:</b><br>
 Existe um local padrão onde fica os scripts, que tem 2 locais possíveis dependendo da forma de instalação do ZABBIX, compilando (<code>/usr/local/share/zabbix/alertscripts/</code>) ou por pacote (<code>/usr/lib/zabbix/alertscripts/</code>), respectivamente.<br>
 Ao final da execução do script, ele indicará qual pasta você acessará.
+-->
+
 
 # Criando Chave API WhatsApp:
 
@@ -287,9 +290,9 @@ vá até o paramemtro <code>\# Timeout=3</code> descomente e aumente para 30, fi
 dessa forma fica garantido a entrega.<br><br>
 
 <b>3 – </b> A estrutura de teste para o WhatsApp será (prefixo para o Brasil, DDD e número): <code>5522988776655</code>;<br>
-Para Telegram será: prioritariamente por ID (podendo usar também: 'Nome Sobrenome' ou '@usuário' se não estiver usando bot);<br>
-E para Email será: usuario@provedor.com.
-Para realizar 3 envios ao mesmo tempo, basta colocar as informações separados por vígula, çor Ex:
+Para Telegram será: prioritariamente por ID (podendo usar também: 'Nome Sobrenome' ou '@usuário' se não estiver usando bot);<br> 
+Para Email será: usuario@provedor.com.<br>
+E para realizar 3 envios ao mesmo tempo, basta colocar as informações separados por vígula, por Ex:
 <pre>sudo -u zabbix ./notificacoes-teste.py --send "-123456789, 5522988776655, usuario@provedor.com"</pre>
 
 
