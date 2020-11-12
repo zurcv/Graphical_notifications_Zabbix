@@ -225,7 +225,7 @@ else:
         contArq += f"{lineIn}\n"
         continue
 
-    contArq = f"{contArq.rstrip()}\n"
+    contArq = f"{contArq.rstrip()}\n\n"
 
 arquivo = open(f"{arqConfig}", "w")
 arquivo.writelines(contArq)
@@ -1027,6 +1027,7 @@ def get_input(prompt1, prompt2):
         L.append(input(prompt))
         if input_complete(L):
             return "\n".join(L).replace("--test", "").strip().rstrip()
+        print()
         prompt = prompt2
 
 def send(msg=False):
@@ -1054,13 +1055,9 @@ def send(msg=False):
 
 def main2(test=None):
     inicio = time.time()
-
-    if test:
-        subject, body, itemid, itemname, period, color, item_type = send(msg=True)
-    else:
-        subject, body, itemid, itemname, period, color, item_type = send()
-
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
+
+    subject, body, itemid, itemname, period, color, item_type = send(test)
     try:
 
         dest = sys.argv[2]
@@ -1135,7 +1132,7 @@ def main():
 
     elif args.argvs_Environment:
         auth = token()
-        main2(test=True)
+        main2(True)
         logout_api()
         exit()
 
