@@ -146,10 +146,6 @@ Houve um problema com o site do desenvolvedor e por enquanto ele estará atenten
 (<a href="https://t.me/Thiago_Pedro" class="wikilink2" title="Conversar com ele" rel="nofollow">@Thiago_Pedro</a></i> - 5527998022075)
 -->
 
-<p>Para usar este envio é necessário contratar o serviço, em conversa com o responsável consegui um desconto de 50%, 
-basta informar o cupom <code><b>zabbix20S</b></code>. </p>
-Para contratar acesse o site <a href="https://www.netizap.app/" class="wikilink2" title="API WhatsApp" rel="nofollow"><b>https://www.netizap.app/</b></a>
-
 <!--
 O desenvolverdor liberou o acesso ao envio por alguns dias para realização de testes, 
 então nenhuma ação será necessária agora, basta seguir com o restante da configuração. acess.key
@@ -157,6 +153,12 @@ então nenhuma ação será necessária agora, basta seguir com o restante da co
 <u><b>Depois será necessário a contratação do serviço, assim que terminar o período de teste 
 colocarei todas as informações necessárias aqui neste bloco de como entrar em contato e contratar.</b></u>
 -->
+
+<p> Para usar este envio é necessário contratar o serviço, em conversa com o responsável consegui um desconto de 50%, 
+basta informar o cupom <code><b>zabbix20S</b></code>. </p>
+Para contratar acesse o site <a href="https://www.netizap.app/" title="API WhatsApp"><b>https://www.netizap.app/</b></a> <br><br>
+
+Caso use somente o envio por WhatsApp, <b>DESCONSIDERE OS PRÓXIMOS PASSOS, e vá direto para a execução do teste <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a></b> <br>
 
 # Criando Chave API Telegram:
 
