@@ -158,7 +158,7 @@ colocarei todas as informações necessárias aqui neste bloco de como entrar em
 basta informar o cupom <code><b>zabbix20S</b></code>. </p>
 Para contratar acesse o site <a href="https://www.netizap.app/" title="API WhatsApp"><b>https://www.netizap.app/</b></a> <br><br>
 
-Caso use somente o envio por WhatsApp, <b>DESCONSIDERE OS PRÓXIMOS PASSOS, e vá direto para a execução do teste <a href="#edite-os-parâmetros" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a></b> <br>
+Caso use somente o envio por WhatsApp, <b>DESCONSIDERE OS PRÓXIMOS PASSOS, e vá direto para a configuração <a href="#edite-os-parâmetros" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a></b> <br>
 
 # Criando Chave API Telegram:
 
