@@ -158,7 +158,7 @@ colocarei todas as informações necessárias aqui neste bloco de como entrar em
 basta informar o cupom <code><b>zabbix20S</b></code>. </p>
 Para contratar acesse o site <a href="https://www.netizap.app/" title="API WhatsApp"><b>https://www.netizap.app/</b></a> <br><br>
 
-Caso use somente o envio por WhatsApp, <b>DESCONSIDERE OS PRÓXIMOS PASSOS, e vá direto para a execução do teste <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a></b> <br>
+Caso use somente o envio por WhatsApp, <b>DESCONSIDERE OS PRÓXIMOS PASSOS, e vá direto para a execução do teste <a href="#edite-os-parâmetros" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a></b> <br>
 
 # Criando Chave API Telegram:
 
@@ -237,19 +237,21 @@ Para iniciarmos a configuração de envio, é preciso editar o arquivo de config
 # Consultando Configuração
 
 <b>OBS:</b><br>
-<b>1 - </b> Caso esteja usando conta invés de bot, terá a vantagem de usar este módulo de consulta, 
+<b>1 - </b> Caso tenha interesse em usar somente o envio por WhatsApp, <b>DESCONSIDERE OS PRÓXIMOS PASSOS, <a href="#comando-para-teste"><u>CLICANDO AQUI</u></a></b> <br>
+
+<b>2 - </b> Caso esteja usando conta invés de bot, terá a vantagem de usar este módulo de consulta, 
 se estiver usando bot, este comando só servirá para finalizarmos a vinculação do remetente.
 
 Este comando, também trará a quantidade e as informações de todos os seus chats, como: Tipo, Nome, ID...
 Mas somente para quem estiver <b>USANDO CONTA.</b>
 <pre>sudo -u zabbix ./notificacoes-teste.py --infoAll</pre>
 
-<b>2 – </b> Ao executar o comando acima, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
+<b>3 – </b> Ao executar o comando acima, será solicitado inserir o token do bot ou número de telefone da conta que será usada para envio, 
 se optar por <b>usar BOT</b>: cole o token, dê ENTER e
-<b>DESCONSIDERE OS PRÓXIMOS PASSOS, <a href="#comando-para-teste" class="wikilink2" rel="nofollow"><u>CLICANDO AQUI</u></a> !</b> <br>
+<b>DESCONSIDERE OS PRÓXIMOS PASSOS, <a href="#comando-para-teste"><u>CLICANDO AQUI</u></a></b> <br>
 
 
-<b>3 – </b> Se optar por <b>usar CONTA</b>, use a seguinte estrutura de telefone 
+<b>4 – </b> Se optar por <b>usar CONTA</b>, use a seguinte estrutura de telefone 
 <code>5522988776655</code> (prefixo para o Brasil, DDD e número), 
 depois que der “Enter”, receberá um código por SMS e/ou no aplicativo 
 <i>(no desktop, no celular ou na versão web, basta estar logado)</i>, 
