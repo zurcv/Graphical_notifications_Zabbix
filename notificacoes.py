@@ -371,20 +371,14 @@ def send_telegram(Ldest, itemType, get_graph, key):
                 try:
                     Contatos = app.get_contacts()
                     for contato in Contatos:
-                        try:
-                            Id = f"{contato.id}"
-                            nome = f"{contato.first_name} "
-                            if contato.last_name:
-                                nome += "{}".format(contato.last_name)
+                        Id = f"{contato.id}"
+                        nome = f"{contato.first_name}"
+                        if contato.last_name:
+                            nome += f" {contato.last_name}"
 
-                        except:
-                            # print("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]))
-                            log.writelog("Sua versão do Python é '{}', atualize para no mínimo 3.6".format(sys.version.split(" ", 1)[0]), arqLog, "WARNING")
-                            exit()
-
-                        username = contato.username
+                        username = contato.username.lower()
                         if username:
-                            if username.lower() in dest or dest in Id or dest in nome.lower():
+                            if username in dest or dest in Id or dest in nome.lower():
                                 dest = nome
                                 flag = False
                                 break
@@ -402,11 +396,11 @@ def send_telegram(Ldest, itemType, get_graph, key):
                         for dialogo in Dialogos:
                             Id = f"{dialogo.chat.id}"
                             if dialogo.chat.title:
-                                nome = "{} ".format(dialogo.chat.title)
+                                nome = f"{dialogo.chat.title}"
                             else:
-                                nome = f"{dialogo.chat.first_name} "
+                                nome = f"{dialogo.chat.first_name}"
                                 if dialogo.chat.last_name:
-                                    nome += "{}".format(dialogo.chat.last_name)
+                                    nome += f" {dialogo.chat.last_name}"
 
                             username = dialogo.chat.username
                             if username:
@@ -430,15 +424,16 @@ def send_telegram(Ldest, itemType, get_graph, key):
                         if chat.title:
                             dest = f"{chat.title}"
                         else:
-                            dest = f"{chat.first_name} "
+                            dest = f"{chat.first_name}"
                             if chat.last_name:
-                                dest += "{}".format(chat.last_name)
+                                dest += f" {chat.last_name}"
 
                     except Exception as msg:
                         # print(msg.args[0])
                         log.writelog(f'{msg.args[0]}', arqLog, "ERROR")
                         exit()
 
+            Id = int(Id)
             sendMsg = """{}{}\n{}""".format(saudacao.format(dest), sys.argv[2], msg)
             if re.search("(0|3)", itemType):
                 try:
