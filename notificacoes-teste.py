@@ -164,6 +164,31 @@ if not os.path.exists(pathLogs):
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
+arqJson = ".env.json"
+fileX = os.path.join(pathLogs, arqJson)
+fileC = """{
+    "code": false,
+    "email": {
+            "smtp.server": false,
+            "mail.user": false,
+            "mail.pass": false
+    },
+    "telegram": {
+            "api.id": false,
+            "api.hash": false
+    },
+    "whatsapp": {
+        "line": false,
+        "acess.key": false,
+        "port": false
+    }
+}"""
+
+if os.path.exists(fileX):
+    filOutX = os.popen(f"cat {fileX}").read().replace("acessKey", "acess.key")
+    write_json(fileX, json.loads(filOutX))
+
+
 arqConfig = path.format('configScripts.properties')
 configDefault = """[PathSection]
 url = http://127.0.0.1/zabbix
@@ -230,27 +255,6 @@ else:
 arquivo = open(f"{arqConfig}", "w")
 arquivo.writelines(contArq)
 arquivo.close()
-
-arqJson = ".env.json"
-fileX = os.path.join(pathLogs, arqJson)
-
-fileC = """{
-    "code": false,
-    "email": {
-            "smtp.server": false,
-            "mail.user": false,
-            "mail.pass": false
-    },
-    "telegram": {
-            "api.id": false,
-            "api.hash": false
-    },
-    "whatsapp": {
-        "line": false,
-        "acessKey": false,
-        "port": false
-    }
-}"""
 
 import logging.config
 import traceback
