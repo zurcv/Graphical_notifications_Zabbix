@@ -120,10 +120,10 @@ Instale os pacotes:
 </h3>
 
 <blockquote> <p> Debian/Ubuntu</p> </blockquote>
-<pre>apt-get install -y wget dos2unix git sudo curl bc</pre>
+<pre>sudo apt-get install -y wget dos2unix git sudo curl bc</pre>
 
 <blockquote> <p>CentOS 6.x, 7 e 8</p> </blockquote>
-<pre>yum install -y wget dos2unix git sudo curl bc</pre>
+<pre>sudo yum install -y wget dos2unix git sudo curl bc</pre>
 
 <blockquote> <p>Faça o download do script de instalação</p> </blockquote>
 <pre>cd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo sh notificacoes.sh</pre>
