@@ -30,14 +30,14 @@ if len(sys.argv) == 1:
 
 try:
     if float(sys.version.split(" ", 1)[0][:-2]) < pythonVersion:
-        print("\nA versão apontada para o '/usr/bin/python3' é \"{}\".\nInstale/Atualize/Aponte para o {} ou superior e reexecute o comando:\n\ncd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo sh notificacoes.sh\n".format(sys.version.split(" ", 1)[0], pythonVersion))
+        print("\nA versão apontada para o '/usr/bin/python3' é \"{}\".\nInstale/Atualize/Aponte para o {} ou superior e reexecute o comando:\n\ncd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo bash notificacoes.sh\n".format(sys.version.split(" ", 1)[0], pythonVersion))
         exit(1)
     import requests, urllib3
     from pyrogram import Client
 
 except Exception as e:
     if "No module" in e.args[0]:
-        print("Erro: {}\n\nExecute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user\n".format(e.args[0]))
+        print("\nErro: {}\n\nExecute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user\n".format(e.args[0]))
 
     else:
         print("{}".format(e.args[0]))
