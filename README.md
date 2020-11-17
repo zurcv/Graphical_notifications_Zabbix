@@ -126,7 +126,7 @@ Instale os pacotes:
 <pre>sudo yum install -y wget dos2unix git sudo curl bc</pre>
 
 <blockquote> <p>Faça o download do script de instalação</p> </blockquote>
-<pre>cd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo sh notificacoes.sh</pre>
+<pre>cd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo bash notificacoes.sh</pre>
 
  <!--
 <b>OBS:</b><br>
