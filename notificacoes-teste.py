@@ -37,7 +37,7 @@ try:
 
 except Exception as e:
     if "No module" in e.args[0]:
-        print("Execute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user\n")
+        print("Erro: {}\n\nExecute o comando:\n\nsudo -u zabbix python3 -m pip install wheel requests urllib3 pyrogram tgcrypto pycryptodome --user\n".format(e.args[0]))
 
     else:
         print("{}".format(e.args[0]))
