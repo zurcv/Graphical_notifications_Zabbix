@@ -128,7 +128,7 @@ Instale os pacotes:
 <blockquote> <p>Faça o download do script de instalação</p> </blockquote>
 <pre>cd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo bash notificacoes.sh</pre>
 
- <!--
+<!--
 <b>OBS:</b><br>
 Existe um local padrão onde fica os scripts, que tem 2 locais possíveis dependendo da forma de instalação do ZABBIX, compilando (<code>/usr/local/share/zabbix/alertscripts/</code>) ou por pacote (<code>/usr/lib/zabbix/alertscripts/</code>), respectivamente.<br>
 Ao final da execução do script, ele indicará qual pasta você acessará.
@@ -137,7 +137,7 @@ Ao final da execução do script, ele indicará qual pasta você acessará.
 
 # Criando Chave API WhatsApp:
 
- <!--
+<!--
 <p><s>Para usar este envio é necessário contratar o serviço, em conversa com o responsável consegui um desconto, 
 basta informar o cupom <code><b>zabbix20S</b></code> e ganhe 50% de desconto. </s></p>
  
