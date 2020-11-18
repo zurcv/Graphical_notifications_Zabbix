@@ -777,7 +777,7 @@ def main():
     whatsapps = []
 
     for x in destino:
-        if re.match(f"^{codDDI}[0-9]+$", x):
+        if re.match(f"^{codDDI}\d{8}.*$", x):
             whatsapps.append(x)
 
         elif re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
