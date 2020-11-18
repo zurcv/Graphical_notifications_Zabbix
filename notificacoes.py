@@ -777,11 +777,11 @@ def main():
     whatsapps = []
 
     for x in destino:
-        if re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
-            emails.append(x)
-
-        elif re.match(f"^{codDDI}[0-9]+$", x):
+        if re.match(f"^{codDDI}[0-9]+$", x):
             whatsapps.append(x)
+
+        elif re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
+            emails.append(x)
 
         else:
             telegram = x.replace("_", " ")
