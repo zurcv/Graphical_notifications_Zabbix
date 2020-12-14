@@ -472,9 +472,9 @@ def send_telegram(Ldest, itemType, get_graph, key):
                     logout_api()
                     exit()
 
-    if re.search("(sim|s|yes|y)", str(Ack).lower()):
-        if nograph not in argvs:
-            ack(dest, "Telegram enviado com sucesso ({0})")
+            if re.search("(sim|s|yes|y)", str(Ack).lower()):
+                if nograph not in argvs:
+                    ack(dest, "Telegram enviado com sucesso ({0})")
 
 def send_whatsapp(Ldestiny, itemType, get_graph, key):
     line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
@@ -569,9 +569,9 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
                 log.writelog('{0}'.format(str(e)), arqLog, "ERROR")
                 exit()
 
-    if re.search("(sim|s|yes|y)", str(Ack).lower()):
-        if nograph not in argvs:
-            ack(destiny, "WhatsApp enviado com sucesso ({0})")
+        if re.search("(sim|s|yes|y)", str(Ack).lower()):
+            if nograph not in argvs:
+                ack(destiny, "WhatsApp enviado com sucesso ({0})")
 
 def token():
     try:
