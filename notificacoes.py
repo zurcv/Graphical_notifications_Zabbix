@@ -88,6 +88,22 @@ if re.search("(sim|s|yes|y)", str(Salutation).lower()):
 else:
     salutation = ""
 
+
+def decrypt(key, source, decode=True):
+    from Crypto.Cipher import AES
+    from Crypto.Hash import SHA256
+    if decode:
+        source = base64.b64decode(source.encode("ISO-8859-1"))
+    key = SHA256.new(key.encode("ISO-8859-1")).digest()  # use SHA-256 over our key to get a proper-sized AES key
+    IV = source[:AES.block_size]  # extract the IV from the beginning
+    decryptor = AES.new(key, AES.MODE_CBC, IV)
+    data = decryptor.decrypt(source[AES.block_size:])  # decrypt
+    padding = data[-1]  # pick the padding value from the end; Python 2.x: ord(data[-1])
+    if data[-padding:] != bytes([padding]) * padding:  # Python 2.x: chr(padding) * padding
+        raise ValueError("Invalid padding...")
+    return data[:-padding].decode("ISO-8859-1")  # remove the padding
+
+
 # Diretórios
 # Log path | Diretório do log
 projeto = sys.argv[0].split("/")[-1:][0].split(".")[0]
@@ -223,6 +239,7 @@ def send_mail(dest, itemType, get_graph, key):
     smtp_server0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'smtp.server')
     mail_user0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.user')
     mail_pass0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.pass')
+    messageE = f"{PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'message.email')} ({{0}})"
     ####################################################################################################################
 
     try:
@@ -313,7 +330,7 @@ def send_mail(dest, itemType, get_graph, key):
 
         if re.search("(sim|s|yes|y)", str(Ack).lower()):
             if nograph not in argvs:
-                ack(dests, "Email enviado com sucesso ({0})")
+                ack(dests, messageE)
 
         # print("Email sent successfully | Email enviado com sucesso ({0})".format(dests))
         log.writelog('Email sent successfully | Email enviado com sucesso ({0})'.format(dests), arqLog, "INFO")
@@ -326,9 +343,11 @@ def send_mail(dest, itemType, get_graph, key):
         exit()
 
 def send_telegram(Ldest, itemType, get_graph, key):
-    # Telegram settings | Configuracao do Telegram #########################################################################
+    # Telegram settings | Configuracao do Telegram #####################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
+    messageT = f"{PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'message.telegram')} ({{0}})"
+    ####################################################################################################################
 
     try:
         api_id = int(decrypt(key, api_id0))
@@ -446,7 +465,7 @@ def send_telegram(Ldest, itemType, get_graph, key):
                     exit()
 
                 try:
-                    app.send_photo(Id, graph, caption=sendMsg, parse_mode="html")
+                    app.send_photo(Id, graph, caption=sendMsg)
                     # print('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest))
                     log.writelog('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
                 except Exception as e:
@@ -463,7 +482,7 @@ def send_telegram(Ldest, itemType, get_graph, key):
 
             else:
                 try:
-                    app.send_message(Id, sendMsg, parse_mode="html")
+                    app.send_message(Id, sendMsg)
                     # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
                     log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
                 except Exception as e:
@@ -474,12 +493,15 @@ def send_telegram(Ldest, itemType, get_graph, key):
 
             if re.search("(sim|s|yes|y)", str(Ack).lower()):
                 if nograph not in argvs:
-                    ack(dest, "Telegram enviado com sucesso ({0})")
+                    ack(dest, messageT)
 
 def send_whatsapp(Ldestiny, itemType, get_graph, key):
+    # WhatsApp settings | Configuracao do WhatsApp #####################################################################
     line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
     acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acess.key')
     port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
+    messageW = f"{PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'message.whatsapp')} ({{0}})"
+    ####################################################################################################################
 
     try:
        line = decrypt(key, line0)
@@ -571,7 +593,7 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
 
         if re.search("(sim|s|yes|y)", str(Ack).lower()):
             if nograph not in argvs:
-                ack(destiny, "WhatsApp enviado com sucesso ({0})")
+                ack(destiny, messageW)
 
 def token():
     try:
@@ -642,7 +664,7 @@ def logout_api():
         )
     )
 
-def getgraph(itemname, period):
+def getgraph(hostName, itemname, period):
     stime = int(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'stime'))  # Graph start time [3600 = 1 hour ago]  |  Hora inicial do grafico [3600 = 1 hora atras]
     try:
         loginpage = requests.get(f'{zbx_server}/index.php', auth=(zbx_user, zbx_pass), verify=False).text
@@ -684,7 +706,7 @@ def getgraph(itemname, period):
                 itemname = "{0} ({1}h:{2}m)".format(itemname, periodH, periodM)
 
         get_graph = s.get('{0}/chart3.php?name={1}&{2}&width={3}&height={4}&stime={5}&items[0][itemid]={6}&items[0][drawtype]=5&items[0][color]={7}'.format(
-            zbx_server, itemname, period, width, height, stime, itemid, color))
+            zbx_server, f"{hostName}: {itemname}", period, width, height, stime, itemid, color))
 
         sid = s.cookies.items()[0][1]
         s.post('{0}/index.php?reconnect=1&sid={1}'.format(zbx_server, sid))
@@ -703,7 +725,10 @@ def getItemType(itemid):
                 "jsonrpc": "2.0",
                 "method": "item.get",
                 "params": {
-                    "output": ["value_type"], "itemids": itemid, "webitems": itemid
+                    "output": ["value_type"],
+                    "selectHosts": ["name"],
+                    "itemids": itemid,
+                    "webitems": itemid
                 },
                 "auth": auth,
                 "id": 2
@@ -715,13 +740,18 @@ def getItemType(itemid):
 
     if itemtype_api["result"]:
         item_type = itemtype_api["result"][0]['value_type']
-        return item_type
+        hostName = itemtype_api["result"][0]['hosts'][0]['name']
+        return item_type, hostName
     else:
         log.writelog(
             'Invalid ItemID or user has no read permission on item/host | ItemID inválido ou usuário sem permissão de leitura no item/host',
             arqLog, "WARNING")
         logout_api()
         exit()
+
+def get_cripto():
+    with open(fileX, 'r') as f:
+        return json.load(f)
 
 def ack(dest, message):
     Json = {
@@ -740,29 +770,12 @@ def ack(dest, message):
     requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'}, verify=False,
             data=json.dumps(Json))
 
-def get_cripto():
-    with open(fileX, 'r') as f:
-        return json.load(f)
-
-def decrypt(key, source, decode=True):
-    from Crypto.Cipher import AES
-    from Crypto.Hash import SHA256
-    if decode:
-        source = base64.b64decode(source.encode("ISO-8859-1"))
-    key = SHA256.new(key.encode("ISO-8859-1")).digest()  # use SHA-256 over our key to get a proper-sized AES key
-    IV = source[:AES.block_size]  # extract the IV from the beginning
-    decryptor = AES.new(key, AES.MODE_CBC, IV)
-    data = decryptor.decrypt(source[AES.block_size:])  # decrypt
-    padding = data[-1]  # pick the padding value from the end; Python 2.x: ord(data[-1])
-    if data[-padding:] != bytes([padding]) * padding:  # Python 2.x: chr(padding) * padding
-        raise ValueError("Invalid padding...")
-    return data[:-padding].decode("ISO-8859-1")  # remove the padding
-
 def main():
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
     if nograph not in argvs:
-        item_type = getItemType(itemid)
-        get_graph = getgraph(itemname, period)
+        item_type, hostName = getItemType(itemid)
+        get_graph = getgraph(hostName, itemname, period)
+
     else:
         item_type = "1"
         get_graph = ""
@@ -801,3 +814,4 @@ if __name__ == '__main__':
     auth = token()
     main()
     logout_api()
+

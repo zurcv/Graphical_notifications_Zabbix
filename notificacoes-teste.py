@@ -203,6 +203,7 @@ path.logs = Default
 
 [PathSectionEmail]
 salutation.email = yes
+message.email = Email enviado com sucesso
 mail.from = ZABBIX Monitoring <monitoring@zabbix.com>
 smtp.server = smtp.gmail.com:587
 mail.user = SeuEmail@gmail.com
@@ -210,12 +211,14 @@ mail.pass = SuaSenha
 
 [PathSectionTelegram]
 salutation.telegram = yes
+message.telegram = Telegram enviado com sucesso
 path.graph = /tmp
 api.id = 1234567
 api.hash = 12asdc64vfda19df165asdvf984dbf45
 
 [PathSectionWhatsApp]
 salutation.whatsapp = yes
+message.whatsapp = WhatsApp enviado com sucesso
 cod.ddi = 55
 line = 5511950287353
 acess.key = XGja6Sgtz0F01rbWNDTc
@@ -444,9 +447,10 @@ def send_mail(dest, itemType, get_graph, key):
         exit()
 
 def send_telegram(dest, itemType, get_graph, key):
-    # Telegram settings | Configuracao do Telegram #########################################################################
+    # Telegram settings | Configuracao do Telegram #####################################################################
     api_id0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.id')
     api_hash0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'api.hash')
+    ####################################################################################################################
 
     try:
         api_id = int(decrypt(key, api_id0))
@@ -560,7 +564,7 @@ def send_telegram(dest, itemType, get_graph, key):
                 exit()
 
             try:
-                app.send_photo(Id, graph, caption=sendMsg, parse_mode="html")
+                app.send_photo(Id, graph, caption=sendMsg)
                 print('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest))
                 log.writelog('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
             except Exception as e:
@@ -577,7 +581,7 @@ def send_telegram(dest, itemType, get_graph, key):
 
         else:
             try:
-                app.send_message(Id, sendMsg, parse_mode="html")
+                app.send_message(Id, sendMsg)
                 print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
                 log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
             except Exception as e:
@@ -587,9 +591,11 @@ def send_telegram(dest, itemType, get_graph, key):
                 exit()
 
 def send_whatsapp(destiny, itemType, get_graph, key):
+    # WhatsApp settings | Configuracao do WhatsApp #####################################################################
     line0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'line')
     acessKey0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'acess.key')
     port0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'port')
+    ####################################################################################################################
 
     try:
        line = decrypt(key, line0)
@@ -764,6 +770,7 @@ def getgraph():
         get_graph = s.get('%s/chart3.php?name=%s&period=%s&width=%s&height=%s&stime=%s&items[0][itemid]=%s&items[0][drawtype]=5&items[0][color]=%s' % (
             zbx_server, itemname, period, width, height, stime, itemid, color))
 
+        #import ipdb; ipdb.set_trace()
         sid = s.cookies.items()[0][1]
         s.post('{0}/index.php?reconnect=1&sid={1}'.format(zbx_server, sid))
 
@@ -776,7 +783,7 @@ def getgraph():
 
 def getItemType():
     try:
-        limit = 5000
+        limit = 8000
         itemid = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
             verify=False, data=json.dumps(
                    {
@@ -856,7 +863,7 @@ def get_info(name=None):
             dialogos = app.iter_dialogs()
         except Exception as msg:
             if "BOT" in msg.args[0]:
-                print("Esta função não está disponível para consultas com BOT\n")
+                print("\nEsta função não está disponível para consultas com BOT\n")
             else:
                 print(msg.args[0])
 
@@ -1153,3 +1160,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
