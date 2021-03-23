@@ -88,6 +88,8 @@ if re.search("(sim|s|yes|y)", str(Salutation).lower()):
 else:
     salutation = ""
 
+if zbx_server.endswith("/"):
+    zbx_server = zbx_server[:-1]
 
 def decrypt(key, source, decode=True):
     from Crypto.Cipher import AES
@@ -296,6 +298,21 @@ def send_mail(dest, itemType, get_graph, key):
         msgImage = MIMEImage(get_graph.content)
         msgImage.add_header('Content-ID', '<image1>')
         msgRoot.attach(msgImage)
+
+    message0 = text
+    valida = 0
+    message1 = ""
+    formatter = [("b", "**"), ("i", "__"), ("u", "--")]
+    for f in formatter:
+        new, old = f
+        if re.search(f"{old}", message0):
+            message1 = re.sub(r"{}".format(old), r"(<(/)?{}>)".format(new),  message0)
+            valida += 1
+
+    if not valida:
+        message1 = message0
+
+    text = message1
 
     msgText = MIMEText(text, 'html', _charset='utf-8')
     msgAlternative.attach(msgText)
@@ -541,7 +558,7 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
             message1 = re.sub(r"(<(/)?{}>)".format(old), r"{}".format(new), message0)
             valida += 1
 
-    if valida == 0:
+    if not valida:
         message1 = message0
 
     message = quote(base64.b64encode(message1.encode("utf-8")))
