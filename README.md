@@ -32,9 +32,7 @@
 -->
 
 # Graphical Notifications Zabbix
-Em caso de dúvida, sugestão ou dificuldade junte-se a nós no <b>Grupo do Telegram</b> <a href="https://t.me/joinchat/B7Jjiz-ttMgxdyD3cRpuhg" class="wikilink2" title="Ingressar no Grupo" rel="nofollow">Gráfico no Email e Telegram</a>.
-
-Envio de alarmes no ZABBIX pelo Telegram com usuário autenticado com gráficos.<br>
+Em caso de dúvida, sugestão ou dificuldade junte-se a nós no <b>Grupo do Telegram</b> <a href="https://t.me/joinchat/cK5rSq8My8hjOTkx" class="wikilink2" title="Ingressar no Grupo" rel="nofollow">Gráfico no Email e Telegram</a>.
 
 O "How to" foi testado no ZABBIX 2.4 ao 5.2 no Debian 8 ao 10, Ubuntu 14 ao 20 e CentOS 6.x ao 8, caso não utilize estas distros procure os pacotes descritos para sua necessidade.
 
