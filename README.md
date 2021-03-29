@@ -336,7 +336,7 @@ Na versão 3.0, é obrigatório a utilização das macros <code>{ALERT.SENDTO}</
 Criando a Ação:
 </h3>
 
-A “<i>Mensagem Padrão</i>” na aba <b>“<u>Ação</u>”</b> existe somente com uma “exigência”, a primeira linha deve permanecer com as macros/variáveis abaixo ilustradas (<i>as macros/variáveis <b>entre as "#" </b></i>), podendo editar da segunda linha em diante. 
+Existe somente com uma exigência na “<i><u>Mensagem Padrão</u></i>”, a primeira linha deve permanecer com as macros/variáveis abaixo ilustradas (<i>as macros/variáveis <b>entre as "#" </b></i>), podendo editar da segunda linha em diante. 
 <br>
 <h3>
 Imagem da Mensagem na Ação:
