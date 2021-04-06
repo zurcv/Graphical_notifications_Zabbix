@@ -299,21 +299,6 @@ def send_mail(dest, itemType, get_graph, key):
         msgImage.add_header('Content-ID', '<image1>')
         msgRoot.attach(msgImage)
 
-    message0 = text
-    valida = 0
-    message1 = ""
-    formatter = [("b", "**"), ("i", "__"), ("u", "--")]
-    for f in formatter:
-        new, old = f
-        if re.search(f"{old}", message0):
-            message1 = re.sub(r"{}".format(old), r"(<(/)?{}>)".format(new),  message0)
-            valida += 1
-
-    if not valida:
-        message1 = message0
-
-    text = message1
-
     msgText = MIMEText(text, 'html', _charset='utf-8')
     msgAlternative.attach(msgText)
 
