@@ -29,7 +29,7 @@ if len(sys.argv) == 1:
     sys.argv.append("-h")
 
 try:
-    if float(sys.version.split(" ", 1)[0][:-2]) < pythonVersion:
+    if float(".".join(sys.version.split(" ", 1)[0].split(".")[:-1])) < pythonVersion:
         print("\nA versão apontada para o '/usr/bin/python3' é \"{}\".\nInstale/Atualize/Aponte para o {} ou superior e reexecute o comando:\n\ncd /tmp ; wget https://raw.githubusercontent.com/sansaoipb/scripts/master/notificacoes.sh -O notificacoes.sh ; sudo dos2unix notificacoes.sh ; sudo bash notificacoes.sh\n".format(sys.version.split(" ", 1)[0], pythonVersion))
         exit(1)
     import requests, urllib3
