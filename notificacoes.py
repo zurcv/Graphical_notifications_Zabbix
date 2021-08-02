@@ -795,7 +795,7 @@ def main():
         if re.match(f"^{codDDI}[0-9].*$", x):
             whatsapps.append(x)
 
-        elif re.search("^.*@[a-z0-9]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
+        elif re.search("^.*@[a-z0-9-]+\.[a-z]+(\.[a-z].*)?$", x.lower()):
             emails.append(x)
 
         else:
