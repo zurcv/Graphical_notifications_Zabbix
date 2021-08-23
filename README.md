@@ -34,7 +34,7 @@
 # Graphical Notifications Zabbix
 Em caso de dúvida, sugestão ou dificuldade junte-se a nós no <b>Grupo do Telegram</b> <a href="https://t.me/joinchat/cK5rSq8My8hjOTkx" class="wikilink2" title="Ingressar no Grupo" rel="nofollow">Gráfico no Email e Telegram</a>.
 
-O "How to" foi testado no ZABBIX 2.4 ao 5.2 no Debian 8 ao 10, Ubuntu 14 ao 20 e CentOS 6.x ao 8, caso não utilize estas distros procure os pacotes descritos para sua necessidade.
+O "How to" foi testado no ZABBIX 2.4 ao 5.4 no Debian 8 ao 10, Ubuntu 14 ao 20 e CentOS 6.x ao 8, caso não utilize estas distros procure os pacotes descritos para sua necessidade.
 
 <!--
 # Acompanhe no Vídeo:
@@ -322,41 +322,46 @@ Tipo de Mídia
 <!--
 <blockquote> <p>Zabbix 2.4</p> </blockquote>
 <img src="https://lh3.googleusercontent.com/FYnv-B4eOnSWPC3GkQLsqak610MnYqXDUBlZQE1qmSHkCXvTfddyNwPcMtnkaFBhU3zSstclZSj8b4WNag=w425-h107-rw"/><br><br>
--->
 
 <blockquote> <p>Zabbix 3.0 (ou superior) </p> </blockquote>
 <img src="https://lh3.googleusercontent.com/pw/ACtC-3fsUm053aTiLCqXzGeHD6nhvsKSdoOlYggUCYqk1UtOIiQM6G9ZQGZjt8vs0-AxDvued87CTrHusOnTBIG7oQZPeTuHYWZNN6TTM7zGMc_AZD-L9JrLVPhO11J-FZUFBStmPlPIo1jWs1zMmokXJmFnxA=w830-h346-no?authuser=0"/><br><br>
 
-
 <b>OBS:</b><br>
 Na versão 3.0, é obrigatório a utilização das macros <code>{ALERT.SENDTO}</code>, <code>{ALERT.SUBJECT}</code> e <code>{ALERT.MESSAGE}</code>, em caso de dúvidas, leia a Documentação 
 <a href="https://www.zabbix.com/documentation/3.0/manual/config/notifications/media/script" class="wikilink2" title="Documentação Oficial" rel="nofollow">Aqui</a>.<br><br>
+-->
+
+<img src="https://lh3.googleusercontent.com/pw/ACtC-3fsUm053aTiLCqXzGeHD6nhvsKSdoOlYggUCYqk1UtOIiQM6G9ZQGZjt8vs0-AxDvued87CTrHusOnTBIG7oQZPeTuHYWZNN6TTM7zGMc_AZD-L9JrLVPhO11J-FZUFBStmPlPIo1jWs1zMmokXJmFnxA=w830-h346-no?authuser=0"/><br><br>
 
 <h3>
-Criando a Ação:
+Configuração para envio:
 </h3>
 
-Existe somente com uma exigência na “<i><u>Mensagem Padrão</u></i>”, a primeira linha deve permanecer com as macros/variáveis abaixo ilustradas (<i>as macros/variáveis <b>entre as "#" </b></i>), podendo editar da segunda linha em diante. 
+Existe somente uma exigência na “<i><u>Mensagem Padrão</u></i>”, 
+a primeira linha deve permanecer com as macros/variáveis abaixo ilustradas 
+(<i>as macros/variáveis <b>entre as "#" </b></i>), 
+podendo editar da segunda linha em diante, seja no "Modelo de mensagem" ou no "Tipo de mídia" ou na ação. 
 <br>
 <h3>
-Imagem da Mensagem na Ação:
+Imagem da Mensagem:
 </h3>
 
 <img src="https://lh3.googleusercontent.com/pw/ACtC-3fxK4Ho3_t5sT98nHLkfy2rZM7pMEG9CrZrcJe967UXCmEKpswUsSJn66NhF94fc39lnukUPUfaP4joCtkZjaM0MTe_Y22DCqwIzx-kN34auXoGmDnlgalz4XG7gJW1HWl-GP4PFt6cK41TTPcLgIswxg=w744-h341-no?authuser=0"/><br><br>
 
 <blockquote> Modelo Mensagem (Incidente)</blockquote>
-<pre>{ITEM.NAME}#{EVENT.ID}#{ITEM.ID}#FF0000#10800#
+<pre>{TRIGGER.ID}#{EVENT.ID}#FF0000#10800#
 <b>IP/DNS:</b> {HOST.CONN}
 <b>Último valor:</b> {ITEM.LASTVALUE}</pre>
 <br>
 <blockquote> Modelo Mensagem (Recuperação)</blockquote>
-<pre>{ITEM.NAME}#{EVENT.ID}#{ITEM.ID}#00C800#3600#
+<pre>{TRIGGER.ID}#{EVENT.ID}#00C800#3600#
 <b>IP/DNS:</b> {HOST.CONN}
 <b>Último valor:</b> {ITEM.LASTVALUE}
 <b>Duração:</b> {EVENT.DURATION}</pre>
 
-<b>OBS:</b><br>logo se for usar
-<i><b>”FF0000” ou ”00C800”</b></i> é a cor da linha (vermelho ou verde) em Hexadecimal (sem ”tralha”), e <i><b>”10800” ou ”3600”</b></i> é o período do gráfico (3h ou 1h) em segundo.<br><br>
+<b>OBS:</b><br>Os valores
+<i><b>”FF0000” ou ”00C800”</b></i> são os apontamentos para as cores da linha do gráfico
+(alarme ou normalização), e <i><b>”10800” ou ”3600”</b></i> é o período do gráfico (3h ou 1h) em segundo.<br><br>
 
 <h3><a id="user-content-features" class="anchor" href="#features" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" role="img" version="1.1" viewBox="0 0 16 16" width="16"><path d="M4 9h1v1h-1c-1.5 0-3-1.69-3-3.5s1.55-3.5 3-3.5h4c1.45 0 3 1.69 3 3.5 0 1.41-0.91 2.72-2 3.25v-1.16c0.58-0.45 1-1.27 1-2.09 0-1.28-1.02-2.5-2-2.5H4c-0.98 0-2 1.22-2 2.5s1 2.5 2 2.5z m9-3h-1v1h1c1 0 2 1.22 2 2.5s-1.02 2.5-2 2.5H9c-0.98 0-2-1.22-2-2.5 0-0.83 0.42-1.64 1-2.09v-1.16c-1.09 0.53-2 1.84-2 3.25 0 1.81 1.55 3.5 3 3.5h4c1.45 0 3-1.69 3-3.5s-1.5-3.5-3-3.5z"></path></svg></a>
 Configurando o usuário
