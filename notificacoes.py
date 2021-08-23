@@ -26,7 +26,8 @@ import os, sys, re, json, time, smtplib
 
 if len(sys.argv) <= 2 or "--send" in sys.argv:
     dest0 = "||".join(sys.argv).split("--send")[1].replace("||", "")
-    print(f"\nEste script é pra ser executado pelo ZABBIx e não manualmente.\nPara realização de teste use o script:\n\nsudo -u zabbix ./notificacoes-teste.py --send {dest0}\n")
+    print(
+        f"\nEste script é pra ser executado pelo ZABBIx e não manualmente.\nPara realização de teste use o script:\n\nsudo -u zabbix ./notificacoes-teste.py --send {dest0}\n")
     exit()
 
 import requests, urllib3
@@ -39,13 +40,16 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import configparser
+
 conf = configparser
 
 import base64
 from urllib.parse import quote
 
+
 class PropertiesReaderX:
     config = None
+
     def __init__(self, pathToProperties):
         PropertiesReaderX.config = conf.RawConfigParser()
         PropertiesReaderX.config.read(pathToProperties)
@@ -54,13 +58,16 @@ class PropertiesReaderX:
         # type: (object, object) -> object
         return PropertiesReaderX.config.get(section, key)
 
-path = "{0}".format("/".join(sys.argv[0].split("/")[:-1])+"/{0}")
 
-if sys.platform.startswith('win32') or sys.platform.startswith('cygwin') or sys.platform.startswith('darwin'):  # para debug quando estiver no WINDOWS ou no MAC
+path = "{0}".format("/".join(sys.argv[0].split("/")[:-1]) + "/{0}")
+
+if sys.platform.startswith('win32') or sys.platform.startswith('cygwin') or sys.platform.startswith(
+        'darwin'):  # para debug quando estiver no WINDOWS ou no MAC
     graph_path = os.getcwd()
 
 else:
-    graph_path = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'path.graph')  # Path where graph file will be save temporarily
+    graph_path = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram',
+                                                                                     'path.graph')  # Path where graph file will be save temporarily
 
 # Zabbix settings | Dados do Zabbix ####################################################################################
 zbx_server = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'url')
@@ -68,8 +75,10 @@ zbx_user = PropertiesReaderX(path.format('configScripts.properties')).getValue('
 zbx_pass = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'pass')
 
 # Graph settings | Configuracao do Grafico #############################################################################
-height = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'height')    # Graph height | Altura
-width = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'width')     # Graph width  | Largura
+height = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection',
+                                                                             'height')  # Graph height | Altura
+width = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection',
+                                                                            'width')  # Graph width  | Largura
 
 # Ack message | Ack da Mensagem ########################################################################################
 Ack = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'ack')
@@ -90,6 +99,7 @@ else:
 
 if zbx_server.endswith("/"):
     zbx_server = zbx_server[:-1]
+
 
 def decrypt(key, source, decode=True):
     from Crypto.Cipher import AES
@@ -161,6 +171,7 @@ file = """{
 arqConfig = "logging_configuration.json"
 pathDefault = ""
 
+
 class Log:
     @staticmethod
     def writelog(entry, pathfile, log_level):
@@ -205,6 +216,7 @@ class Log:
         elif log_level.upper() == "ERROR":
             logger.error(str(entry))
 
+
 log = Log
 
 nograph = "--nograph"
@@ -213,13 +225,13 @@ argvs = " || ".join(sys.argv)
 
 if nograph not in argvs:
     try:
-        itemname, eventid, itemid, color, period, body = sys.argv[3].split('#', 5)
+        triggerid, eventid, color, period, body = sys.argv[3].split('#', 4)
         period = int(period)
 
     except ValueError as e:
         if "unpack" in str(e):
             log.writelog(
-                '{0} >> at split (itemname, eventid, itemid, color, period, body) | Quantidade de argumentos insuficientes no split (itemname, eventid, itemid, color, period, body)'.format(
+                '{0} >> at split (triggerid, eventid, color, period, body) | Quantidade de argumentos insuficientes no split (triggerid, eventid, color, period, body)'.format(
                     str(e)), arqLog, "ERROR")
 
         else:
@@ -231,14 +243,17 @@ else:
 
 body = re.sub(r'(\d{4})\.(\d{2})\.(\d{2})', r'\3/\2/\1', body).replace("--nograph", "").rstrip().strip()
 
+
 def destinatarios(dest):
     destinatario = ["{0}".format(hostsW).strip().rstrip() for hostsW in dest.split(",")]
     return destinatario
 
+
 def send_mail(dest, itemType, get_graph, key):
     # Mail settings | Configrações de e-mail ###########################################################################
     mail_from = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.from')
-    smtp_server0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'smtp.server')
+    smtp_server0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail',
+                                                                                       'smtp.server')
     mail_user0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.user')
     mail_pass0 = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'mail.pass')
     messageE = f"{PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'message.email')} ({{0}})"
@@ -258,7 +273,6 @@ def send_mail(dest, itemType, get_graph, key):
         mail_pass = decrypt(key, mail_pass0)
     except:
         mail_pass = mail_pass0
-
 
     try:
         mail_from = email.utils.formataddr(tuple(mail_from.replace(">", "").split(" <")))
@@ -282,7 +296,8 @@ def send_mail(dest, itemType, get_graph, key):
     msgRoot.attach(msgAlternative)
 
     saudacao = salutation
-    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail', 'salutation.email')
+    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionEmail',
+                                                                                   'salutation.email')
 
     if re.search("(sim|s|yes|y)", str(Saudacao).lower()):
         if saudacao:
@@ -293,8 +308,8 @@ def send_mail(dest, itemType, get_graph, key):
     text = '{0}<p>{1}</p>'.format(saudacao, msg)
 
     if re.search("(0|3)", itemType):
-        URL = "{0}/history.php?action=showgraph&itemids[]={1}"
-        text += '<br><a href="{0}"><img src="cid:image1"></a>'.format(URL.format(zbx_server, itemid))
+        URL = urlGraph.replace("width=900&height=200", "width=1400&height=300")
+        text += f'<br><a href="{URL}"><img src="cid:image1"></a>'
         msgImage = MIMEImage(get_graph.content)
         msgImage.add_header('Content-ID', '<image1>')
         msgRoot.attach(msgImage)
@@ -315,7 +330,8 @@ def send_mail(dest, itemType, get_graph, key):
             smtp.login(mail_user, mail_pass)
         except smtplib.SMTPAuthenticationError as msg:
             # print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
-            log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog, "WARNING")
+            log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(
+                msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog, "WARNING")
             smtp.quit()
             exit()
         except smtplib.SMTPException:
@@ -325,7 +341,8 @@ def send_mail(dest, itemType, get_graph, key):
             smtp.sendmail(mail_from, dest, msgRoot.as_string())
         except Exception as msg:
             # print("Error: Unable to send email | Não foi possível enviar o e-mail - {0}".format(msg.smtp_error.decode("utf-8").split(". ")[0]))
-            log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog,
+            log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail - {0}'.format(
+                msg.smtp_error.decode("utf-8").split(". ")[0]), arqLog,
                          "WARNING")
             smtp.quit()
             exit()
@@ -339,10 +356,12 @@ def send_mail(dest, itemType, get_graph, key):
         smtp.quit()
     except smtplib.SMTPException as msg:
         # print("Error: Unable to send email | Não foi possível enviar o e-mail ({0})".format(msg))
-        log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail ({0})'.format(msg), arqLog, "WARNING")
+        log.writelog('Error: Unable to send email | Não foi possível enviar o e-mail ({0})'.format(msg), arqLog,
+                     "WARNING")
         logout_api()
         smtp.quit()
         exit()
+
 
 def send_telegram(Ldest, itemType, get_graph, key):
     # Telegram settings | Configuracao do Telegram #####################################################################
@@ -365,14 +384,14 @@ def send_telegram(Ldest, itemType, get_graph, key):
 
     msg = body.replace("\\n", "")
     saudacao = salutation
-    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram', 'salutation.telegram')
+    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionTelegram',
+                                                                                   'salutation.telegram')
 
     if re.search("(sim|s|yes|y)", str(Saudacao).lower()):
         if saudacao:
             saudacao = salutation + " {0} \n\n"
     else:
         saudacao = ""
-
 
     with app:
         for dest in Ldest:
@@ -458,21 +477,27 @@ def send_telegram(Ldest, itemType, get_graph, key):
             sendMsg = """{}{}\n{}""".format(saudacao.format(dest), sys.argv[2], msg)
             if re.search("(0|3)", itemType):
                 try:
-                    graph = '{0}/{1}.png'.format(graph_path, itemid)
+                    graph = '{0}/{1}.png'.format(graph_path, triggerid)
                     with open(graph, 'wb') as png:
                         png.write(get_graph.content)
                 except BaseException as e:
-                    log.writelog('{1} >> An error occurred at save graph file in {0} | Ocorreu um erro ao salvar o grafico no diretório {0}'.format(graph_path, str(e)), arqLog, "WARNING")
+                    log.writelog(
+                        '{1} >> An error occurred at save graph file in {0} | Ocorreu um erro ao salvar o grafico no diretório {0}'.format(
+                            graph_path, str(e)), arqLog, "WARNING")
                     logout_api()
                     exit()
 
                 try:
                     app.send_photo(Id, graph, caption=sendMsg)
                     # print('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest))
-                    log.writelog('Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
+                    log.writelog(
+                        'Telegram sent photo message successfully | Telegram com gráfico enviado com sucesso ({0})'.format(
+                            dest), arqLog, "INFO")
                 except Exception as e:
                     # print('Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram\n%s' % e)
-                    log.writelog('{0} >> Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
+                    log.writelog(
+                        '{0} >> Telegram FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo telegram ({1})'.format(
+                            e, dest), arqLog, "ERROR")
                     logout_api()
                     exit()
 
@@ -486,16 +511,20 @@ def send_telegram(Ldest, itemType, get_graph, key):
                 try:
                     app.send_message(Id, sendMsg)
                     # print('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest))
-                    log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog, "INFO")
+                    log.writelog('Telegram sent successfully | Telegram enviado com sucesso ({0})'.format(dest), arqLog,
+                                 "INFO")
                 except Exception as e:
                     # print('Telegram FAIL at sending photo message | FALHA ao enviar a mensagem com gráfico pelo telegram\n%s' % e)
-                    log.writelog('{0} >> Telegram FAIL at sending message | FALHA ao enviar a mensagem pelo telegram ({1})'.format(e, dest), arqLog, "ERROR")
+                    log.writelog(
+                        '{0} >> Telegram FAIL at sending message | FALHA ao enviar a mensagem pelo telegram ({1})'.format(
+                            e, dest), arqLog, "ERROR")
                     logout_api()
                     exit()
 
             if re.search("(sim|s|yes|y)", str(Ack).lower()):
                 if nograph not in argvs:
                     ack(dest, messageT)
+
 
 def send_whatsapp(Ldestiny, itemType, get_graph, key):
     # WhatsApp settings | Configuracao do WhatsApp #####################################################################
@@ -506,9 +535,9 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
     ####################################################################################################################
 
     try:
-       line = decrypt(key, line0)
+        line = decrypt(key, line0)
     except:
-       line = line0
+        line = line0
 
     try:
         acessKey = decrypt(key, acessKey0)
@@ -520,9 +549,9 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
     except:
         port = port0
 
-
     saudacao = salutation
-    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'salutation.whatsapp')
+    Saudacao = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp',
+                                                                                   'salutation.whatsapp')
 
     if re.search("(sim|s|yes|y)", str(Saudacao).lower()):
         if saudacao:
@@ -552,8 +581,10 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
             Graph = quote(base64.b64encode(get_graph.content))
             try:
                 headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-                payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(key=acessKey, text=message, stream=Graph)
-                url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(port=port, line=line, destiny=destiny)
+                payload = 'app=NetiZap%20Consumers%201.0&key={key}&text={text}&type=PNG&stream={stream}&filename=grafico'.format(
+                    key=acessKey, text=message, stream=Graph)
+                url = "http://api.meuaplicativo.vip:{port}/services/file_send?line={line}&destiny={destiny}".format(
+                    port=port, line=line, destiny=destiny)
                 result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
                 if result.status_code != 200:
@@ -563,7 +594,9 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
                     # print('WhatsApp FAIL at sending photo message | FALHA ao enviar mensagem com gráfico pelo WhatsApp\n%s' % error)
                 else:
                     # print('WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(destiny))
-                    log.writelog('WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                    log.writelog(
+                        'WhatsApp sent photo message successfully | WhatsApp com gráfico enviado com sucesso ({0})'.format(
+                            destiny), arqLog, "INFO")
                     log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
 
             except Exception as e:
@@ -574,7 +607,8 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
             try:
                 headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                 payload = 'App=NetiZap%20Consumers%201.0&AccessKey={}'.format(acessKey)
-                url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(port=port, line=line, destiny=destiny, text=message)
+                url = "http://api.meuaplicativo.vip:{port}/services/message_send?line={line}&destiny={destiny}&reference&text={text}".format(
+                    port=port, line=line, destiny=destiny, text=message)
                 result = requests.post(url, auth=("user", "api"), headers=headers, data=payload)
 
                 if result.status_code != 200:
@@ -585,7 +619,8 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
 
                 else:
                     # print('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny))
-                    log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny), arqLog, "INFO")
+                    log.writelog('WhatsApp sent successfully | WhatsApp enviado com sucesso ({0})'.format(destiny),
+                                 arqLog, "INFO")
                     log.writelog('{0}'.format(json.loads(result.text)["result"]), arqLog, "INFO")
 
             except Exception as e:
@@ -597,21 +632,22 @@ def send_whatsapp(Ldestiny, itemType, get_graph, key):
             if nograph not in argvs:
                 ack(destiny, messageW)
 
+
 def token():
     try:
         login_api = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
-            verify=False, data=json.dumps(
+                                  verify=False, data=json.dumps(
                 {
-                  "jsonrpc": "2.0",
-                  "method": "user.login",
-                  "params": {
-                      "user": zbx_user,
-                      "password": zbx_pass
-                  },
-                  "id": 1
+                    "jsonrpc": "2.0",
+                    "method": "user.login",
+                    "params": {
+                        "user": zbx_user,
+                        "password": zbx_pass
+                    },
+                    "id": 1
                 }
             )
-        )
+                                  )
 
         login_api = json.loads(login_api.text.encode('utf-8'))
 
@@ -630,32 +666,36 @@ def token():
 
     except ValueError as e:
         # print('Check declared zabbix URL/IP and try again | Valide a URL/IP do Zabbix declarada e tente novamente\nCurrent: %s' % zbx_server)
-        log.writelog('Check declared zabbix URL/IP and try again | Valide a URL/IP do Zabbix declarada e tente novamente. (Current: {0})'.format(zbx_server), arqLog, "WARNING")
+        log.writelog(
+            'Check declared zabbix URL/IP and try again | Valide a URL/IP do Zabbix declarada e tente novamente. (Current: {0})'.format(
+                zbx_server), arqLog, "WARNING")
         exit()
     except Exception as e:
         # print(e)
         log.writelog('{0}'.format(str(e)), arqLog, "WARNING")
         exit()
 
+
 def version_api():
     resultado = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
-        verify=False, data=json.dumps(
-                {
-                    "jsonrpc": "2.0",
-                    "method": "apiinfo.version",
-                    "params": [],
-                    "id": 5
-                }
+                              verify=False, data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "method": "apiinfo.version",
+                "params": [],
+                "id": 5
+            }
         )
-    )
+                              )
     resultado = json.loads(resultado.content)
     if 'result' in resultado:
         resultado = resultado["result"]
     return resultado
 
+
 def logout_api():
     requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
-        verify=False, data=json.dumps(
+                  verify=False, data=json.dumps(
             {
                 "jsonrpc": "2.0",
                 "method": "user.logout",
@@ -664,10 +704,60 @@ def logout_api():
                 "id": 4
             }
         )
-    )
+                  )
 
-def getgraph(hostName, itemname, period):
-    stime = int(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'stime'))  # Graph start time [3600 = 1 hour ago]  |  Hora inicial do grafico [3600 = 1 hora atras]
+
+def getgraph(triggerName, hostName, listaItemIds, period):
+    global urlGraph
+    # Graph start time [3600 = 1 hour ago]  |  Hora inicial do grafico [3600 = 1 hora atras]
+    stime = int(PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSection', 'stime'))
+    dictCores = {
+        'FF0000': [
+            'FF0000',
+            'C71585',
+            'FFA500',
+            'FF1493',
+            'FFC0CB',
+            'CD5C5C',
+            '8B0000',
+            'FFD700',
+            '800080',
+            'DA70D6',
+            'FA8072',
+            'FF69B4',
+            'DB7093',
+            'FFB6C1',
+            'FF00FF',
+            'EE82EE',
+            'FF6347',
+            'F08080',
+            'B22222',
+            'DC143C',
+        ],
+        '00C800': [
+            '008000',
+            '00FF00',
+            '6B8E23',
+            '0000FF',
+            '00FFFF',
+            '4169E1',
+            '7FFFD4',
+            '32CD32',
+            '708090',
+            '00FF7F',
+            '66CDAA',
+            '40E0D0',
+            '008B8B',
+            '00BFFF',
+            '4682B4',
+            'B0C4DE',
+            '2E8B57',
+            '9ACD32',
+            '98FB98',
+            '90EE90'
+        ]
+    }
+
     try:
         loginpage = requests.get(f'{zbx_server}/index.php', auth=(zbx_user, zbx_pass), verify=False).text
         enter = re.search('<button.*value=".*>(.*?)</button>', loginpage)
@@ -677,12 +767,14 @@ def getgraph(hostName, itemname, period):
             enter = str(enter.group(1))
             s.post(f'{zbx_server}/index.php?login=1', params={'name': zbx_user, 'password': zbx_pass, 'enter': enter}, verify=False).text
         except:
-           pass
+            pass
 
         stime = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time() - stime))
 
         if 4.0 > float(version_api()[:3]):
             period = "period={0}".format(period)
+            nome_tempo = f"{{}}"
+
         else:
             periodD = period // 86400
             segundos_rest = period % 86400
@@ -691,92 +783,139 @@ def getgraph(hostName, itemname, period):
             periodM = segundos_rest // 60
             periodS = segundos_rest % 60
 
+            Nome = f"{triggerName} {{}}"
             if periodD > 0:
                 period = "from=now-{0}d-{1}h-{2}m&to=now".format(periodD, periodH, periodM)
-                itemname = "{0} ({1}d {2}h:{3}m)".format(itemname, periodD, periodH, periodM)
+                nome_tempo = Nome.format(f"({periodD}d {periodH}h:{periodM}m)")
 
             elif periodD == 0 and periodH == 0:
                 period = "from=now-{0}m&to=now".format(periodM)
-                itemname = "{0} ({1}m)".format(itemname, periodM)
+                nome_tempo = Nome.format(f"({periodM}m)")
 
             elif periodD == 0 and period % 60 == 0:
                 period = "from=now-{0}h&to=now".format(periodH)
-                itemname = "{0} ({1}h)".format(itemname, periodH)
+                nome_tempo = Nome.format(f"({periodH}h)")
 
             else:
                 period = "from=now-{0}h-{1}m&to=now".format(periodH, periodM)
-                itemname = "{0} ({1}h:{2}m)".format(itemname, periodH, periodM)
+                nome_tempo = Nome.format(f"({periodH}h:{periodM}m)")
 
-        get_graph = s.get('{0}/chart3.php?name={1}&{2}&width={3}&height={4}&stime={5}&items[0][itemid]={6}&items[0][drawtype]=5&items[0][color]={7}'.format(
-            zbx_server, f"{hostName}: {itemname}", period, width, height, stime, itemid, color))
+        urlGraph = f"{zbx_server}/chart3.php?name={hostName}: {nome_tempo}&{period}&width={width}&height={height}&stime={stime}"
 
+        j = 0
+        for i in range(len(listaItemIds)):
+            try:
+                cor = dictCores[color][i]
+            except:
+                if j == len(dictCores['00C800']):
+                    j = 0
+                cor = dictCores[color][j]
+                j += 1
+
+            urlGraph += f"&items[{i}][itemid]={listaItemIds[i]}&items[{i}][drawtype]=5&items[{i}][color]={cor}"
+
+        get_graph = s.get(urlGraph)
         sid = s.cookies.items()[0][1]
-        s.post('{0}/index.php?reconnect=1&sid={1}'.format(zbx_server, sid))
+        s.post(f'{zbx_server}/index.php?reconnect=1&sid={sid}')
 
         return get_graph
 
     except BaseException:
-        log.writelog('Can\'t connect to {0}/index.php | Não foi possível conectar-se à {0}/index.php'.format(zbx_server), arqLog, "CRITICAL")
-        logout_api()
-        exit()
-
-def getItemType(itemid):
-    itemtype_api = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
-                                 verify=False, data=json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "method": "item.get",
-                "params": {
-                    "output": ["value_type"],
-                    "selectHosts": ["name"],
-                    "itemids": itemid,
-                    "webitems": itemid
-                },
-                "auth": auth,
-                "id": 2
-            }
-        )
-     )
-
-    itemtype_api = json.loads(itemtype_api.text.encode('utf-8'))
-
-    if itemtype_api["result"]:
-        item_type = itemtype_api["result"][0]['value_type']
-        hostName = itemtype_api["result"][0]['hosts'][0]['name']
-        return item_type, hostName
-    else:
         log.writelog(
-            'Invalid ItemID or user has no read permission on item/host | ItemID inválido ou usuário sem permissão de leitura no item/host',
-            arqLog, "WARNING")
+            'Can\'t connect to {0}/index.php | Não foi possível conectar-se à {0}/index.php'.format(zbx_server), arqLog,
+            "CRITICAL")
         logout_api()
         exit()
+
+
+def getTrigger(triggerid):
+    try:
+        triggerid = requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'},
+                               verify=False, data=json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "method": "trigger.get",
+                    "params": {
+                        "output": ["description"],
+                        'triggerids': triggerid,
+                        "selectItems": ['name', 'value_type', 'lastvalue'],
+                        "selectHosts": ["name"],
+                        "expandDescription": True,
+                    },
+                    "auth": auth,
+                    "id": 2
+                }
+            )
+                               )
+
+        if triggerid.status_code != 200:
+            print(f"HTTPError {triggerid.status_code}: {triggerid.reason}")
+            # log.writelog(f'HTTPError {itemid.status_code}: {itemid.reason}', arqLog, "WARNING")
+            logout_api()
+            exit()
+
+        triggerid = json.loads(triggerid.text.encode('utf-8'))
+
+        listaItemIds = []
+        item_type = ""
+        if 'result' in triggerid:
+            hostName = triggerid["result"][0]['hosts'][0]['name']
+            resultado = triggerid["result"]
+            triggerName = triggerid["result"][0]['description']
+            for i in range(0, len(resultado)):
+                for items in resultado[i]['items']:
+                    if items['itemid'] not in listaItemIds:
+                        listaItemIds.append(items['itemid'])
+
+                    if not item_type:
+                        item_type += items['value_type']
+
+            return item_type, triggerName, hostName, listaItemIds
+
+        elif 'error' in triggerid:
+            print('Zabbix: %s' % triggerid["error"]["data"])
+            # log.writelog('Zabbix: {0}'.format(ValueItemid["error"]["data"]), arqLog, "ERROR")
+            exit()
+
+        else:
+            print(triggerid)
+            # log.writelog('{0}'.format(ValueItemid), arqLog, "ERROR")
+            exit()
+
+    except Exception as msg:
+        print(msg)
+        # log.writelog('{0}'.format(msg), arqLog, "ERROR")
+        exit()
+
 
 def get_cripto():
     with open(fileX, 'r') as f:
         return json.load(f)
 
+
 def ack(dest, message):
     Json = {
-            "jsonrpc": "2.0",
-            "method": "event.acknowledge",
-            "params": {
-                "eventids": eventid,
-                "message":  message.format(dest)
-            },
-            "auth": auth,
-            "id": 3
+        "jsonrpc": "2.0",
+        "method": "event.acknowledge",
+        "params": {
+            "eventids": eventid,
+            "message": message.format(dest)
+        },
+        "auth": auth,
+        "id": 3
     }
     if 4.0 < float(version_api()[:3]):
         Json["params"]["action"] = 6
 
     requests.post(f'{zbx_server}/api_jsonrpc.php', headers={'Content-type': 'application/json'}, verify=False,
-            data=json.dumps(Json))
+                  data=json.dumps(Json))
+
 
 def main():
     codDDI = PropertiesReaderX(path.format('configScripts.properties')).getValue('PathSectionWhatsApp', 'cod.ddi')
     if nograph not in argvs:
-        item_type, hostName = getItemType(itemid)
-        get_graph = getgraph(hostName, itemname, period)
+        item_type, triggerName, hostName, listaItemIds = getTrigger(triggerid)
+        get_graph = getgraph(triggerName, hostName, listaItemIds, period)
 
     else:
         item_type = "1"
@@ -811,9 +950,9 @@ def main():
     if [] != emails:
         send_mail(emails, item_type, get_graph, codeKey)
 
+
 if __name__ == '__main__':
     JSON = get_cripto()
     auth = token()
     main()
     logout_api()
-

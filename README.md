@@ -346,7 +346,7 @@ podendo editar da segunda linha em diante, seja no "Modelo de mensagem" ou no "T
 Imagem da Mensagem:
 </h3>
 
-<img src="https://lh3.googleusercontent.com/pw/ACtC-3fxK4Ho3_t5sT98nHLkfy2rZM7pMEG9CrZrcJe967UXCmEKpswUsSJn66NhF94fc39lnukUPUfaP4joCtkZjaM0MTe_Y22DCqwIzx-kN34auXoGmDnlgalz4XG7gJW1HWl-GP4PFt6cK41TTPcLgIswxg=w744-h341-no?authuser=0"/><br><br>
+<img src="https://lh3.googleusercontent.com/pw/AM-JKLXh9DsipBWzQlk_Wqbveke7Ll21HExvenhOreIAvgzGRT87K5vdFeg_ALQdQ8vqpzMqz4r0J52NEyBN15115MK3hvOz1CcYH4Q4PAlIRCtClj1OQ6fBCFLEdTOFFdwnWueVTc5OGKriQdePNvXxfrk5Mw=w787-h393-no?authuser=0"/><br><br>
 
 <blockquote> Modelo Mensagem (Incidente)</blockquote>
 <pre>{TRIGGER.ID}#{EVENT.ID}#FF0000#10800#
